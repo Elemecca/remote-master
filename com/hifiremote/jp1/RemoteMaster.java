@@ -91,7 +91,6 @@ import com.hifiremote.jp1.io.IO;
 import com.hifiremote.jp1.io.JP12Serial;
 import com.hifiremote.jp1.io.JP1Parallel;
 import com.hifiremote.jp1.io.JP1USB;
-
 import com.hifiremote.jp1.assembler.MAXQ610data;
 
 /**
@@ -221,6 +220,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   protected JCheckBoxMenuItem highlightItem = null;
 
   private JCheckBoxMenuItem enablePreserveSelection = null;
+  
+  private JCheckBoxMenuItem showSlingboxProtocols = null;
   
   private JRadioButtonMenuItem defaultDelayItem = null;
   
@@ -2064,6 +2065,14 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     enablePreserveSelection.setToolTipText( "<html>Allow control of which function data is preserved when changing the protocol used in a device upgrade.<br>Do not use this unless you know what you are doing and why.</html>" );
     menu.add( enablePreserveSelection );
     
+    showSlingboxProtocols = new JCheckBoxMenuItem( "Show Slingbox protocols" );
+    showSlingboxProtocols.setMnemonic( KeyEvent.VK_X );
+    showSlingboxProtocols.setSelected( Boolean.parseBoolean( properties.getProperty( "ShowSlingboxProtocols", "false" ) ) );
+    showSlingboxProtocols.addActionListener( this );
+    showSlingboxProtocols.setToolTipText( "<html>Include the no-repeat protocols that are specific to Slingbox usage.<br>"
+        + "Note that a change to this option only takes effect when RM or RMIR<br>is next opened.</html>" );
+    menu.add( showSlingboxProtocols );
+    
     JMenu tooltipSubMenu = new JMenu( "Set Tooltip Delay" );
     tooltipSubMenu.setMnemonic( KeyEvent.VK_T );
     tooltipSubMenu.setToolTipText( "<html>Set the delay between mouse pointer entering an object and the tooltip (help message)<br>"
@@ -3505,6 +3514,17 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         properties.setProperty( "enablePreserveSelection", Boolean.toString( enablePreserveSelection.isSelected() ) );
       }
+      else if ( source == showSlingboxProtocols )
+      {
+        if ( !showSlingboxProtocols.isSelected() )
+        {
+          properties.remove( "ShowSlingboxProtocols" );
+        }
+        else
+        {
+          properties.setProperty( "ShowSlingboxProtocols", Boolean.toString( showSlingboxProtocols.isSelected() ) );
+        }
+      }
       else if ( source == defaultDelayItem )
       {
         properties.remove( "TooltipDelay" );
@@ -4480,7 +4500,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
       RemoteManager.getRemoteManager().loadRemotes( properties );
 
-      ProtocolManager.getProtocolManager().load( new File( workDir, "protocols.ini" ) );
+      ProtocolManager.getProtocolManager().load( new File( workDir, "protocols.ini" ), properties );
 
       DigitMaps.load( new File( workDir, "digitmaps.bin" ) );
 

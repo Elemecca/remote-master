@@ -54,7 +54,7 @@ public class PropertyReader
       if ( property.name.charAt( pos - 1 ) == ':' )
         property.name = property.name.substring( 0, pos - 1 );
       line = line.substring( pos + 1 );
-      while ( line.endsWith( "\\" ) )
+      while ( line.endsWith( "\\" ) && !isException( property.name ) )
         line = line.substring( 0, line.length() - 1 ).trim() + reader.readLine().trim();
       property.value = decode( line );
     }
@@ -133,7 +133,26 @@ public class PropertyReader
     }
     return section;
   }
+  
+  private boolean isException( String value )
+  {
+    for ( String exception : exceptions )
+    {
+      if ( value.startsWith( exception ) )
+      {
+        return true;
+      }
+    }
+    return false;
+  }
 
-  /** The reader. */
   private BufferedReader reader = null;
+  
+  /**
+   *   The exceptions list controls exceptions from the use of backslash for line continuation.
+   *   If the name of a property starts with a string in this list then a final backslash in
+   *   the property value is taken as a literal rather than as a line continuation marker.
+   *   This is to permit the use of the backslash as a function or button name in device upgrades. 
+   */
+  private static final String[] exceptions = new String[]{ "Function", "ExtFunction", "Button" };
 }

@@ -144,7 +144,9 @@ Private build 13
 - Fix bug that could leave macros of XSight remotes containing functions from devices that have been deleted; such inconsistent setups could not be saved or loaded (Graham)
 - Make RDF parameter DevCodeOffset operate correctly (Graham)
 - Fix bug preventing 5-digit EFCs working with External Functions (Graham)
-- Create a default handling of non-existent map file (Graham) 
+- Create a default handling of non-existent map file (Graham)
+- Permit function name to end in (or just to be) backslash character without it being interpreted as line continuation marker (Graham)
+- Add new entry to Options in RM and RMIR to select whether or not to include protocols with variant name "slingbox" (Graham)
 
 Changes for v2.02
 -- Alpha --

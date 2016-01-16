@@ -82,6 +82,8 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
   private JMenuItem exitItem = null;
 
   private JCheckBoxMenuItem enablePreserveSelection = null;
+  
+  private JCheckBoxMenuItem showSlingboxProtocols = null;
 
   private JMenuItem editManualItem = null;
 
@@ -191,6 +193,7 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
             preferences.setLastRemoteSignature( remote.getSignature() );
           }
           properties.removePropertyChangeListener( "enablePreserveSelection", me );
+          properties.removePropertyChangeListener( "ShowSlingboxProtocols", me );
           savePreferences();
           me = null;
         }
@@ -626,12 +629,19 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
     
     enablePreserveSelection = new JCheckBoxMenuItem( "Allow Preserve Control" );
     enablePreserveSelection.setMnemonic( KeyEvent.VK_A );
-    enablePreserveSelection.setSelected( Boolean.parseBoolean( properties.getProperty( "enablePreserveSelection",
-        "false" ) ) );
+    enablePreserveSelection.setSelected( Boolean.parseBoolean( properties.getProperty( "enablePreserveSelection", "false" ) ) );
     enablePreserveSelection.addActionListener( this );
     enablePreserveSelection
         .setToolTipText( "<html>Allow control of which function data is preserved when changing the protocol used in a device upgrade.<br>Do not use this unless you know what you are doing and why.</html>" );
     menu.add( enablePreserveSelection );
+    
+    showSlingboxProtocols = new JCheckBoxMenuItem( "Show Slingbox protocols" );
+    showSlingboxProtocols.setMnemonic( KeyEvent.VK_X );
+    showSlingboxProtocols.setSelected( Boolean.parseBoolean( properties.getProperty( "ShowSlingboxProtocols", "false" ) ) );
+    showSlingboxProtocols.addActionListener( this );
+    showSlingboxProtocols.setToolTipText( "<html>Include the no-repeat protocols that are specific to Slingbox usage.<br>"
+        + "Note that a change to this option only takes effect when RM or RMIR<br>is next opened.</html>" );
+    menu.add( showSlingboxProtocols );
 
     menu = new JMenu( "Advanced" );
     menu.setMnemonic( KeyEvent.VK_A );
@@ -989,6 +999,17 @@ public class KeyMapMaster extends JP1Frame implements ActionListener, PropertyCh
       else if ( source == enablePreserveSelection )
       {
         properties.setProperty( "enablePreserveSelection", Boolean.toString( enablePreserveSelection.isSelected() ) );
+      }
+      else if ( source == showSlingboxProtocols )
+      {
+        if ( !showSlingboxProtocols.isSelected() )
+        {
+          properties.remove( "ShowSlingboxProtocols" );
+        }
+        else
+        {
+          properties.setProperty( "ShowSlingboxProtocols", Boolean.toString( showSlingboxProtocols.isSelected() ) );
+        }
       }
       else if ( source == writeBinaryItem )
       {

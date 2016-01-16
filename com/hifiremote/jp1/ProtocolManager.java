@@ -46,7 +46,7 @@ public class ProtocolManager
    * @throws Exception
    *           the exception
    */
-  public void load( File f ) throws Exception
+  public void load( File f, PropertyFile properties ) throws Exception
   {
     if ( loaded )
     {
@@ -75,6 +75,8 @@ public class ProtocolManager
     String name = null;
     Hex id = null;
     String type = null;
+    String variant = null;
+    boolean showSlingboxProtocols = Boolean.parseBoolean( properties.getProperty( "ShowSlingboxProtocols", "false" ) );
     extra = false;
 
     while ( true )
@@ -104,7 +106,8 @@ public class ProtocolManager
 
       if ( line.charAt( 0 ) == '[' ) // begin new protocol
       {
-        if ( name != null )
+        variant = props != null ? props.getProperty( "VariantName", "" ) : "";
+        if ( name != null && ( showSlingboxProtocols || !variant.equalsIgnoreCase( "slingbox" ) ) )
         {
           Protocol protocol = ProtocolFactory.createProtocol( name, id, type, props );
           if ( protocol != null )
@@ -147,7 +150,11 @@ public class ProtocolManager
       }
     }
     rdr.close();
-    add( ProtocolFactory.createProtocol( name, id, type, props ) );
+    variant = props != null ? props.getProperty( "VariantName", "" ) : "";
+    if ( showSlingboxProtocols || !variant.equalsIgnoreCase( "slingbox" ) )
+    {
+      add( ProtocolFactory.createProtocol( name, id, type, props ) );
+    }
     ManualProtocol manualProtocol = new ManualProtocol( new Hex( "FF FF" ), null );
     manualProtocol.setName( manualProtocol.getName() );
     add( manualProtocol );
