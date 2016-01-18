@@ -3343,7 +3343,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( ioName.equals( "JPS" ) )
     {
       JPS jps = ( JPS )ioIn;
-      if ( use == Use.UPLOAD && osName.equals( "Linux" ) )
+      if ( use == Use.UPLOAD && osName.equals( "Linux" )
+          && ( portName == null || portName.contains( "REMOTE" ) ) )
       {
         String title = "Facility not supported";
         String message = "RMIR does not yet support writing directly to a Simpleset remote in Linux";

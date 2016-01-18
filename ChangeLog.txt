@@ -147,6 +147,7 @@ Private build 13
 - Create a default handling of non-existent map file (Graham)
 - Permit function name to end in (or just to be) backslash character without it being interpreted as line continuation marker (Graham)
 - Add new entry to Options in RM and RMIR to select whether or not to include protocols with variant name "slingbox" (Graham)
+- Fix bug preventing upload in Linux to a settings.bin file on the PC specified as a JPS port name (Graham)
 
 Changes for v2.02
 -- Alpha --
