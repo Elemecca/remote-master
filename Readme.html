@@ -41,8 +41,8 @@
 </div>
 <div class="content">
 <h1><a name="general"></a>General Notes</h1>
-<p>Remote Master (aka RM) was originally designed and developed primarily by Greg Bush, with significant contributions from John S Fine, Nils Ekberg, Graham Dixon (mathdon) and others.</p>
-<p>RM is a Java application.  That means that in order to run RM, you must have either the Java Developer Kit (JDK) or
+<p>Remote Master (aka RM/RMIR) was originally designed and developed primarily by Greg Bush, with significant contributions from John S Fine, Nils Ekberg, Graham Dixon and others.  It is currently maintained by Graham Dixon (mathdon).</p>
+<p>RM/RMIR is a Java application.  That means that in order to run it, you must have either the Java Developer Kit (JDK) or
 the Java Runtime Environment (JRE) installed, version 6.0 or later.  Either of these can be downloaded for free from the <a href="http://java.sun.com/javase/downloads/index.jsp">J2SE Downloads</a> page.</p>
 <p>The Remote Master user interface makes extensive use of context menus. Context menus are accessed by clicking the right mouse button in an area when you want to do something.  RemoteMaster also often provides multiple ways to accomplish the same task.</p>
 <p>Take, for example, the Layout panel, which shows an image of the remote being used on the left, and a list of the available functions on the right.  There are 3 different ways to assign a function to a button:
@@ -53,28 +53,27 @@ the Java Runtime Environment (JRE) installed, version 6.0 or later.  Either of t
 </ol>
 <h1><a name="start"></a>Getting Started</h1>
 <ol>
-<li><If you haven't already, download and install Java version 6.0 or later.  You can download it from the <a href="http://java.sun.com/javase/downloads/index.jsp">J2SE Download</a> page.  Either the Java Developer Kit (JDK) or the Java Runtime Environment (JRE) will do.<br>&nbsp;</li>
-<li>Download the latest version of Remote Master from <a href="https://sourceforge.net/project/showfiles.php?group_id=30560&package_id=22596">SourceForge</a>, and unzip it to the directory of your choice, preserving directory names.<br>&nbsp;</li>
-<li>Download the latest version of the <a href="http://www.hifi-remote.com/forums/dload.php?action=file&file_id=6160">Maps and Images required for RM</a> from the <a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=81">Main</a> <a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=7">Tools</a> section of the <a href="http://www.hifi-remote.com/forums/dload.php">File Section</a> of the <a href=http://www.hifi-remote.com/forums/>JP1 Remotes Forums</a>. 
-<p>Unzip it to the folder of your choice, creating a <b>maps</b> sub-folder containing all the maps and images.</li>
-<li>If you haven't already, download the latest version of the <a href="http://www.hifi-remote.com/forums/dload.php?action=file&file_id=5338">RDF files needed for IR and RM</a> from the 
-<a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=81">Main</a> <a href="http://www.hifi-remote.com/forums/dload.php?action=category&cat_id=7">Tools</a> section of the <a href="http://www.hifi-remote.com/forums/dload.php">File Section</a> of the <a href=http://www.hifi-remote.com/forums/>JP1 Remotes Forums</a>
-<p>Unzip it to the folder of your choice.  It is recommended that you do <b>NOT</b> place it in the same directory as you placed Remote Master.</p>
-<p><b><u>Note:</u></b> You must have RDFs for all supported remotes in order for RM to work correctly when importing or loading device upgrades that were created for remotes other than the one(s) you will be using.</p>
+<li>If you haven't already, download and install Java version 6.0 or later.  You can download it from the <a href="http://java.sun.com/javase/downloads/index.jsp">J2SE Download</a> page.  Either the Java Developer Kit (JDK) or the Java Runtime Environment (JRE) will do.</li>
+<li><p>Download the latest version of Remote Master from <a href="https://sourceforge.net/projects/controlremote/files/RemoteMaster/">SourceForge</a>, and unzip it to the directory of your choice, preserving directory names.  The directory should not be read-only, as certain processes write files to this installation directory or a sub-directory of it.  As of version 2.03 there are two zip packages, a full one and an update one.  If this is a new installation of RM/RMIR then you should download the full package.  If you are updating an existing installation with a later build of the same version then you may instead download the (much smaller) update package and unzip it to the existing installation folder, overwriting any files of the same names.</p></li>
+<li><p>As of RM/RMIR version 2.03, it is no longer necessary to download RDF files or Maps and Images as these are included in the full RM/RMIR zip package and updates for them are included in the update package.</p>
 </li>
-<li>If you are using a version of Windows (95/98/NT/XP/Vista/Windows 7), double-click on <b>Setup.vbs</b>.  
+<li>If you are using a version of Windows (XP/Vista/Windows 7,8,8.1 or 10), double-click on <b>Setup.vbs</b>.  
 <p>This will create shortcuts in Start > Programs > Remote Master for your use.  Feel free to send them to you Desktop or copy them to your Quick Launch toolbar.  File associations are also created for .rmdu and .rmir file, so you can just double-click on them directly.</p></li>
+<li>If you are using Linux, run <b>setup.sh</b> from Terminal as a shell script.
+<p>This creates two .desktop shortcuts, one for RMIR and the other (named RemoteMaster) for RM. They will be created in your installation folder, but they are also copied to your $HOME/.local/share/applications folder to ensure that they appear on your Dash. Setup.sh will also add you to the dialout group of users, if you are not already in it. If you need to be added, then it will ask you for your sudo password as this step needs to be run with root privileges. This step is needed to enable RMIR to access USB serial ports without RMIR itself being run as root.</p></li>
+<li>If you are using Mac OS X, there is no setup script to run.</li>
 </ol>
-<p>That's it, Remote Master is now ready for your use!  There are a few different ways to start Remote Master:
+<p>That's it, RM and RMIR are now ready for your use!  There are a few different ways to start them:
 <ol>
-<li>Click on the <b>Remote Master</b> or <b>RMIR</b> shortcut in <b><tt>Start &gt; All Programs &gt; Remote Master</tt></b><p>Non-windows users should use the rmaster.sh and rmir.sh scripts.</p></po></li>
-<li>Double-click on a .rmdu or .rmir file.<br>&nbsp;</li>
-<li>In your browser, click on a link to a *.rmdu or *.rmir file.</li>
+<li>With all three OS's, RMIR can be opened without using a shortcut by double-clicking or otherwise running the Java file RemoteMaster.jar.  RM can be opened from RMIR with the menu item File > New > Device Upgrade.</li>
+<li><p>Windows and Linux users can use the shortcuts created when the setup script was run.</p></li>
+<li><p>Windows users can double-click on a .rmdu or .rmir file.</p></li>
 </ol>
-<p>There is a short tutorial available for RM.  See <a href="http://www.hifi-remote.com/jp1/help/rm.shtml">JP1 - Just How Easy Is It?</url>
+<p>There is a short tutorial available for RMIR.  See <a href="http://www.hifi-remote.com/wiki/index.php?title=JP1_-_Just_How_Easy_Is_It%3F_-_RM-IR_Version">JP1 - Just How Easy Is It? - RMIR version</a>.  Tutorial information on RM is given in the remainder of this article.</p>
 <h1><a name="main"></a>Using Remote Master</h1>
-<p>Remote Master was loosely based on Keymap Master, so there are many similarities between the two.  Anyone familiar with Keymap Master will have no trouble using Remote Master.</p>
-<p>However, because Remote Master is a true application, while Keymap Master is a spreadsheet that behaves like an application, the Remote Master user interface does have some significant differences from Keymap Master.</p>
+<p>Remote Master (RM) was loosely based on Keymap Master, so there are many similarities between the two.  Anyone familiar with Keymap Master will have no trouble using Remote Master.  Similarly RMIR was loosely based on IR.exe and has a similar user interface.</p>
+<p>However, because Remote Master is a true application, while Keymap Master is a spreadsheet that behaves like an application, the Remote Master user interface does have some significant differences from Keymap Master.  Although IR.exe is a true (Windows-only) application, its design prevented it from being extended to the interfaces used by UEI for recent remotes.  So IR.exe supports remotes only up to the JP1.3 interface.  RMIR supports all these but adds JP1.4, JP2, JP2.1, JP3, XSight and Simpleset remotes to its support.</p>
+<p>Note that the remainder of this article concerns only RM.  For further information about RMIR, see the article "JP1 - Just How Easy Is it? - RMIR version" referenced above.
 <h2><a name="menubar"></a>The Menu Bar</h2>
 <p>The Remote Master menu bar provides access to general functions and options.
 <h3><a name="filemenu"></a>The File Menu</h3>
@@ -91,7 +90,7 @@ KeymapMaster Device Upgrade file (*.txt), change the <b>Files of type:</b> field
 </tr>
 <tr>
 <th>Save</th>
-<td>This menu will save the device upgrade to a file.  This item will be disabled unless a RemoteMaster Device Upgrade file was loaded, or the "Save as..." item has been used.</td>
+<td>This menu will save the device upgrade to a file.  This item will be diabled unless a RemoteMaster Device Upgrade file was loaded, or the "Save as..." item has been used.</td>
 </tr>
 <tr>
 <th>Save&nbsp;as...</th>
@@ -122,7 +121,7 @@ KeymapMaster Device Upgrade file (*.txt), change the <b>Files of type:</b> field
 <table>
 <tr>
 <th>Look&nbsp;and&nbsp;Feel</th>
-<td>Allows you to select the overall look and feel used by RemoteMaster.  Most Windows users will want to use the <b>Windows</b> Look and Feel, but I recommend the <b>Metal</b> Look and Feel.  The reason for this is simple:  the <b>Windows</b> Look and Feel does not highlight
+<td>Allows you to select the over all look and feel used by RemoteMaster.  Most Windows users will want to use the <b>Windows</b> Look and Feel, but I recommend the <b>Metal</b> Look and Feel.  The reason for this is simple:  the <b>Windows</b> Look and Feel does not highlight
 the current cell in the Functions panel.
 </td>
 </tr>
@@ -135,7 +134,7 @@ the current cell in the Functions panel.
 <table>
 <tr>
 <th><u>A</u>lways</th>
-<td>Whenever an action you perform might cause you to lose the contents of the Device Upgrade.</td>
+<td>Whenever an action you perform might cause you to lose the contents of the Device Ugrade.</td>
 </tr>
 <tr>
 <th>On&nbsp;E<u>x</u>it</th>
@@ -321,7 +320,7 @@ desired values for the protocol parameters, then press the OK button
 </ol>
 <p>Then, go to the Functions sheet and enter the EFC's (EFC-style
 Button Codes MUST be used) for all of the various functions. In
-the "Combiner Device" column, select the entry corresponding to the
+the "Cominer Device" column, select the entry corresponding to the
 protocol and parameters entered above.</p>
 <p>To enable Duration Control for the
 function, select the duration multiple to be used in the "Duration" column
@@ -351,7 +350,7 @@ function, select the duration multiple to be used in the "Duration" column
 </tr>
 <tr>
 <th>Hex</th>
-<td>Enter the raw hex for the command, as groups of 2 hex digits separated by spaces. For example "0C A9".  You usually won't edit this field, you will let RM compute the value based on information entered in the other columns.
+<td>Enter the raw hex for the command, as groups of 2 hex digits separated by spaces. For examaple "0C A9".  You usually won't edit this field, you will let RM compute the value based on information entered in the other columns.
 </tr>
 <tr>
 <th>Description</th>
@@ -367,7 +366,7 @@ by using the context menu.  Just right click where you want to add the new funct
 </tr>
 <tr>
 <th>Delete</th>
-<td>Delete the currently selected function(s).  Functions that have been assigned to buttons cannot be deleted.  You can select multiple functions. This can also be accomplished using the context menu.  Simply right-click on the function you want to delete and select <b>Delete</b>.  If the function you right-clicked on is one of many selected functions, all the functions will be deleted.</td>
+<td>Delete the currently selected function(s).  Functions that have been assigned to buttons cannot be deleted.  You can select multile functions. This can also be accomplished using the context menu.  Simply right-click on the function you want to delete and select <b>Delete</b>.  If the function you right-clicked on is one of many selected functions, all the functions will be deleted.</td>
 </tr>
 <tr>
 <th>Move&nbsp;up</th>
@@ -398,7 +397,7 @@ the function parameters on the External Functions panel.<p>
 the External Function panel is used in exactly the same way as the Functions panel.
 Refer to the <a href="#functions">Functions Panel</a> for more information.</p>
 <p>You can also import functions from an RM or KM device upgrade file.  Use the <b>Import</b> button or the <b>Import</b>
-item on the context menu.  Note that the imported functions will only work if the source device upgrade is either <ul><li>a built-in setup code<li>installed in your remote.</ul></p>
+item on the context menu.  Note that the imported functions will only work if the source device upgrade is either <ul><li>a builtin setup code<li>installed in your remote.</ul></p>
 <table>
   <tr>
     <th>Name</th>
@@ -602,7 +601,7 @@ instead of presenting the buttons in a table, the Layout panel presents
 them visually, using an image of the selected remote.  Rather than indicate
 the buttons that are <b>NOT</b> in the keymap for the current device type using
 an asterisk, the
-Layout panel shows you the buttons that <b>ARE</b> in the keymap by outlining
+Layout panel shows you than buttons that <b>ARE</b> in the keymap by outlining
 them in orange.  Since there aren't multiple physical buttons to represent the
 shift states of the buttons, you choose the shift state by selecting one of the
 <b>Mode</b> radio buttons.</p>
@@ -622,7 +621,7 @@ by name.  Buttons that already have functions assigned will not get reassigned.<
 <li>Use the context menu (right-click) in a cell where you want to assign a function,
 then click the desired function in the context menu.</li>
 <li>Drag-n-drop a function onto the desired cell.</li>
-<li>Highlight the cell where you want to assign a function by clicking on it, then
+<li>Highlight the cell where you want to assing a function by clicking on it, then
 double-click the function you want to assign to it.</li>
 <li>Use the <b>Delete</b> key or the <b>Remove</b> button to remove the an assigned function from a button.</li>
 </ol>

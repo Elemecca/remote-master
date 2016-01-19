@@ -148,6 +148,10 @@ Private build 13
 - Permit function name to end in (or just to be) backslash character without it being interpreted as line continuation marker (Graham)
 - Add new entry to Options in RM and RMIR to select whether or not to include protocols with variant name "slingbox" (Graham)
 - Fix bug preventing upload in Linux to a settings.bin file on the PC specified as a JPS port name (Graham)
+Release build 14
+- Revise protocols.ini to include new identifications of existing executors, addition of S3C80 code for various entries and addition of no-repeat variants for Slingbox use (Graham, Dave Reed, Rob Crowe)
+- Update "Getting Started" section of Readme.html (Graham)
+- Update DecodeIR.html (Dave Reed)
 
 Changes for v2.02
 -- Alpha --
