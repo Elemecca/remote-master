@@ -1509,6 +1509,7 @@ public class MAXQ610data
                 }
                 pbDesc += " " + c + ";";
               }
+              pbDesc += "\n";
             }
           }
         }

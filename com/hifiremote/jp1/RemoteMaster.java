@@ -116,7 +116,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.03";
-  public final static int buildVer = 13;
+  public final static int buildVer = 14;
   
   public static int getBuild()
   {
