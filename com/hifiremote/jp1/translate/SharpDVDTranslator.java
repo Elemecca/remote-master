@@ -31,27 +31,13 @@ public class SharpDVDTranslator extends Translate
   @Override
   public void in( Value[] parms, Hex hex, DeviceParameter[] devParms, int onlyIndex )
   {
+    int d, s, sLo, sHi;
+    d = reverse( ( ( Number )devParms[ 0 ].getValueOrDefault() ).intValue(), 4);
+    s = reverse( ( ( Number )devParms[ 1 ].getValueOrDefault() ).intValue(), 8);
+    sLo = (s & 0x0F);
+    sHi = (s & 0xF0) >> 4;
     int data = 0x70;
-    int temp = ( 1 + extract( hex, 0, 1 ) + extract( hex, 4, 1 ) ) % 2;
-    if ( temp != 0 )
-    {
-      data |= 0x08;
-    }
-    temp = ( extract( hex, 1, 1 ) + extract( hex, 5, 1 ) ) % 2;
-    if ( temp != 0 )
-    {
-      data |= 0x04;
-    }
-    temp = ( 1 + extract( hex, 2, 1 ) + extract( hex, 6, 1 ) ) % 2;
-    if ( temp != 0 )
-    {
-      data |= 0x02;
-    }
-    temp = ( extract( hex, 3, 1 ) + extract( hex, 7, 1 ) ) % 2;
-    if ( temp != 0 )
-    {
-      data |= 0x01;
-    }
+    data ^= d ^ sHi ^ sLo ^ extract( hex, 0, 4 ) ^ extract( hex, 4, 4 ) ^ extract( hex, 8, 4 );
     insert( hex, 8, 8, data );
   }
 
