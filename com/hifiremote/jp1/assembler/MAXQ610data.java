@@ -482,7 +482,8 @@ public class MAXQ610data
         return false;
       if ( !irStream.equals( is.irStream ) )
         return false;
-
+      if ( !Arrays.deepEquals( comments.toArray( new String[ 0 ] ), is.comments.toArray( new String[ 0 ] ) ) )
+        return false;
       return true;
     }
     
@@ -1495,22 +1496,7 @@ public class MAXQ610data
           
           for ( IRPstruct irp : pb.irps )
           {
-            pbDesc += irp;
-            if ( !irp.comments.isEmpty() )
-            {
-              boolean whenDone = false;
-              pbDesc += "  //";
-              for ( String c : irp.comments )
-              {
-                if ( c.contains( "=" ) && !whenDone )
-                {
-                  pbDesc += " when";
-                  whenDone = true;
-                }
-                pbDesc += " " + c + ";";
-              }
-              pbDesc += "\n";
-            }
+            pbDesc += irp + getCondition( irp ) + "\n";
           }
         }
         s += pbDesc;
@@ -1627,22 +1613,7 @@ public class MAXQ610data
           
           for ( IRPstruct irp : pb.irps )
           {
-            pbDesc += irp;
-            if ( !irp.comments.isEmpty() )
-            {
-              boolean whenDone = false;
-              pbDesc += "  //";
-              for ( String c : irp.comments )
-              {
-                if ( c.contains( "=" ) && !whenDone )
-                {
-                  pbDesc += " when";
-                  whenDone = true;
-                }
-                pbDesc += " " + c + ";";
-              }
-            }
-            pbDesc += "\n\n";
+            pbDesc += irp + getCondition( irp ) + "\n\n";
           }
         }
         s += pbDesc;
@@ -1669,6 +1640,62 @@ public class MAXQ610data
     {
       e.printStackTrace();
     }
+  }
+  
+  private String getCondition( IRPstruct irp )
+  {
+    String condition = "";
+    if ( !irp.comments.isEmpty() )
+    {
+      boolean whenDone = false;
+      condition += "  //";
+      LinkedHashMap< String, String > cMap = new LinkedHashMap< String, String >();
+      for ( String c : irp.comments )
+      {
+        int pos = c.indexOf( ":1:" );
+        {
+          if ( pos > 0 )
+          {
+            String var = c.substring( 0, pos );
+            int ndx = 7 - Integer.parseInt( c.substring( pos+3, pos+4 ) );
+            String n = c.substring( pos+5, pos+6 );
+            String val = cMap.get( var );
+            if ( val == null )
+            {
+              val = "xxxxxxxx";
+            }
+            val = val.substring( 0, ndx ) + n + val.substring( ndx + 1 );
+            cMap.put( var, val );
+          }
+        }
+      }
+      if ( cMap.size() > 0 )
+      {
+        if ( !whenDone )
+        {
+          condition += " when";
+          whenDone = true;
+        }
+        for ( String c : cMap.keySet() )
+        {
+          condition += " " + c + "=" + cMap.get( c ) + ";";
+        }
+      }
+      
+      for ( String c : irp.comments )
+      {
+        if ( !c.contains( ":1:" ) )
+        {
+          if ( c.contains( "=" ) && !whenDone )
+          {
+            condition += " when";
+            whenDone = true;
+          }
+          condition += " " + c + ";";
+        }
+      }
+    }
+    return condition;
   }
   
   /**

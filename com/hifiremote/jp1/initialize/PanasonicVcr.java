@@ -12,7 +12,8 @@ import com.hifiremote.jp1.DeviceParameter;
  */
 public class PanasonicVcr extends Initializer
 {
-
+  private int state = 0;
+  
   /**
    * Instantiates a new panasonic vcr.
    * 
@@ -20,7 +21,27 @@ public class PanasonicVcr extends Initializer
    *          the parms
    */
   public PanasonicVcr( String[] parms )
-  {}
+  {
+    int parmIndex = 0;
+    for ( int i = 0; i < parms.length; i++ )
+    {
+      String text = parms[ i ].trim();
+      if ( text.isEmpty() )
+      {
+        continue;
+      }
+      int val = Integer.parseInt( text );
+      switch ( parmIndex )
+      {
+        case 0:
+          state = val;
+          break;
+        default:
+          break;
+      }
+      parmIndex++ ;
+    }
+  }
 
   /*
    * (non-Javadoc)
@@ -45,19 +66,22 @@ public class PanasonicVcr extends Initializer
     subCmdParm.setDefault( ( sub & 1 ) == 0 ? 0 : 1 );
     ( ( ChoiceEditor )devCmdParm.getEditor() ).initialize();
     ( ( ChoiceEditor )subCmdParm.getEditor() ).initialize();
-    if ( ( dev & sub & ~17 ) != 0 )
-    {
-      throw new IllegalArgumentException( "All four combinations will have wrong check bytes" );
-    }
-    else if ( ( dev & 1 ) != 0 )
-    {
-      throw new IllegalArgumentException( dev + "." + ( sub | 1 ) + " and " + ( dev ^ 16 ) + "." + ( sub | 1 )
-          + " will have wrong check bytes" );
-    }
-    else if ( ( sub & 16 ) != 0 )
-    {
-      throw new IllegalArgumentException( ( dev | 16 ) + "." + sub + " and " + ( dev | 16 ) + "." + ( sub ^ 1 )
-          + " will have wrong check bytes" );
-    }
+//    if ( state == 0 )
+//    {
+//      if ( ( dev & sub & ~17 ) != 0 )
+//      {
+//        throw new IllegalArgumentException( "All four combinations will have wrong check bytes" );
+//      }
+//      else if ( ( dev & 1 ) != 0 )
+//      {
+//        throw new IllegalArgumentException( dev + "." + ( sub | 1 ) + " and " + ( dev ^ 16 ) + "." + ( sub | 1 )
+//            + " will have wrong check bytes" );
+//      }
+//      else if ( ( sub & 16 ) != 0 )
+//      {
+//        throw new IllegalArgumentException( ( dev | 16 ) + "." + sub + " and " + ( dev | 16 ) + "." + ( sub ^ 1 )
+//            + " will have wrong check bytes" );
+//      }
+//    }
   }
 }

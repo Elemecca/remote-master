@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
@@ -484,6 +485,30 @@ public class SetupPanel extends KMPanel implements ActionListener, ItemListener,
           protocolHolder.add( parameters[ i ].getComponent(), "3, " + row );
           row++ ;
           tlPH.insertRow( row++ , 5 );
+          parameters[ i ].getComponent().addFocusListener( new FocusAdapter()
+          {
+            @Override
+            public void focusLost( FocusEvent e )
+            {
+              Protocol p = deviceUpgrade.getProtocol();
+              Hex hex = p.getFixedData( deviceUpgrade.getParmValues() );
+              Value[] v = p.importFixedData( hex );
+              for ( int i = 0; i < parameters.length; i++ )
+              {
+                parameters[ i ].removeListener( SetupPanel.this );
+                if ( v[ i ] == null || v[ i ].getUserValue() == null )
+                {
+                  parameters[ i ].setValue( null );
+                }
+                else if ( !v[ i ].getUserValue().toString().equals( parameters[ i ].getDefaultValue().toString() ) )
+                {
+                  parameters[ i ].setValue( v[ i ].getUserValue() );
+                }
+                parameters[ i ].addListener( SetupPanel.this );
+              }
+              deviceUpgrade.setParmValues( p.getDeviceParmValues() );
+            }
+          } );
         }
         
         int maxRows = 7;

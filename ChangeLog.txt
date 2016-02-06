@@ -152,6 +152,17 @@ Release build 14
 - Revise protocols.ini to include new identifications of existing executors, addition of S3C80 code for various entries and addition of no-repeat variants for Slingbox use (Graham, Dave Reed, Rob Crowe)
 - Update "Getting Started" section of Readme.html (Graham)
 - Update DecodeIR.html (Dave Reed)
+Private build 15
+- Correct Sharp DVD entries in protocols.ini (Dave Reed)
+- Add frequency selection 57kHz/38kHz to Dish Network (PID 0002:5) in protocols.ini (Graham)
+- Change name "Nokia Quad" to "Nokia" in protocols.ini to agree with DecodeIR (Graham)
+- Change name pid: 01 C9 to JVC-48 Combo in protocols.ini and complete the entry (Graham)
+- Make SetupPanel check, and change if required, entered device parameters against back calculation from fixed data (Graham)
+- Revise translator XorCheck to allow inclusion of fields from device parameters (Graham)
+- Modify protocols.ini entries for various Panasonic and JVC-48 executors to impose device code constraint of Kaseikyo protocols (Graham)
+- Amend initializer PanasonicVcr so that it reads its optional parameter and acts upon it (Graham)
+- Comment out the code generating exceptions in PanasonicVcr initializer (Graham, Dave Reed)
+- Delete redundant translators GI2, NECParmTranslator, SharpDVDTranslator, XMPsumCheck (Graham, Dave Reed)
 
 Changes for v2.02
 -- Alpha --
