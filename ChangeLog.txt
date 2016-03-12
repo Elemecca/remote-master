@@ -163,6 +163,7 @@ Private build 15
 - Amend initializer PanasonicVcr so that it reads its optional parameter and acts upon it (Graham)
 - Comment out the code generating exceptions in PanasonicVcr initializer (Graham, Dave Reed)
 - Delete redundant translators GI2, NECParmTranslator, SharpDVDTranslator, XMPsumCheck (Graham, Dave Reed)
+- Fix bug introduced in build 11 that prevented Multiplex special function displaying correctly (Graham)
 
 Changes for v2.02
 -- Alpha --

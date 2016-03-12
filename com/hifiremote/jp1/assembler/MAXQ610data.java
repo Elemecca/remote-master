@@ -69,6 +69,10 @@ public class MAXQ610data
   private int brackets = 0;
   private int minRpts = 0;
   private boolean firstFrame = true;
+  private OpTree[] txd = new OpTree[ 16 ];
+  private int[] txdIndex = new int[ 16 ];
+  private int[] txb = new int[ 16 ];
+  private int txdCount = 0;
   
   /*  
    *  Choices[] and irpParts[] elements:
@@ -1676,9 +1680,13 @@ public class MAXQ610data
           condition += " when";
           whenDone = true;
         }
+        else
+        {
+          condition += " and";
+        }
         for ( String c : cMap.keySet() )
         {
-          condition += " " + c + "=" + cMap.get( c ) + ";";
+          condition += " " + c + "=" + cMap.get( c );
         }
       }
       
@@ -1691,6 +1699,10 @@ public class MAXQ610data
             condition += " when";
             whenDone = true;
           }
+          else if ( c.startsWith( "when " ) && whenDone )
+          {
+            c = "and" + c.substring( 4 );
+          }    
           condition += " " + c + ";";
         }
       }
@@ -3101,7 +3113,7 @@ public class MAXQ610data
         {
           txStr += ": ";
         }
-        txStr += analyzeTXBytes( txBytes, togData, prb.sbVars );
+        txStr += translateTXBytes( txBytes, prb.sbVars );
         pos += txCount;
         if ( i < pbSwitchSize )
         {
@@ -3375,6 +3387,9 @@ public class MAXQ610data
       Arrays.fill( pf, 0 );
       pf[ 0 ] = data[ pos++ ];
       int formatLen = pf[ 0 ] & 0x07;
+      pos += formatLen;
+      int txPos = pos;
+      
       for ( int i = 1; i <= formatLen; i++ )
       {
         pf[ i ] = data[ sigPtr + i ];
@@ -3396,9 +3411,18 @@ public class MAXQ610data
           getPFdescription( pfDesc[ 1 ] , pfDesc[ 2 ], choices );
         }
       }
+      
+      // When choices[ 20 ]==false, i.e. SB code processed AFTER signal spec applied
+      // to fixed and variable bytes, TX bytes (i.e. signal spec) must be translated 
+      // now, before SB code processed.  Note, however, that SB code can only be present
+      // when sbHasAlternates==false and pbSwitchSize==0.  Translation of alternate
+      // signal specs when pbSwitchSize>0 takes place later.
+      if ( !choices[ 20 ] )
+      {
+        Hex txBytes = hex.subHex( txPos, txCount );
+        translateTXBytes( txBytes, null );
+      }
 
-      pos += formatLen;
-      int txPos = pos;
       for ( int i = 0; i <= pbSwitchSize; i++ )
       {
         pos += txCount;
@@ -3577,8 +3601,15 @@ public class MAXQ610data
           int txp = txPos;
           for ( int i = 0; i <= pbSwitchSize; i++ )
           {
-            Hex txBytes = hex.subHex( txp, txCount );
-            analyzeTXBytes( txBytes, togData, null );
+            // If pbSwitchSize > 0 then there can be no SB code, so the results of
+            // translateTXBytes cannot be affected by code.  They are also unaffected
+            // when choicdes[ 20 ]==true.
+            if ( choices[ 20 ] || i > 0 )
+            {
+              Hex txBytes = hex.subHex( txp, txCount );
+              translateTXBytes( txBytes, null );
+            }
+            analyzeTXBytes( togData );
             txp += txCount;
             if ( pbSwitchSize > 0 )
             {
@@ -3827,7 +3858,7 @@ public class MAXQ610data
     else
     {
       // valid types for signal block
-      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10,11,12,13,16 );  // 6 removed, not sure why it was allowed
+      validTypes = Arrays.asList( -1,1,2,3,4,7,8,9,10,11,12,13,16,17 );  // 6 removed, not sure why it was allowed
     }
 
     if ( limit == 0 )
@@ -4269,6 +4300,7 @@ public class MAXQ610data
      *14 = Indexed/indirect data move
      *15 = DBNZ instruction
      *16 = Branch on test of repeat required (function 55)
+     *17 = Change of TXB/TXD data
      */
     
     
@@ -4558,6 +4590,12 @@ public class MAXQ610data
         comments.add( "Toggle type: " + analyzeToggle( val << 8, null ) );
       }
     }
+    else if ( opIndex == 0 && args.startsWith( "TXDcount, #" ) )
+    {
+      itemType = 17;
+      int val = getImmValue( args );
+      txdCount = val;
+    }
     else if ( opIndex == 8 )
     {
       itemType = 6;
@@ -4607,21 +4645,51 @@ public class MAXQ610data
       return 0;
     }
   }
+  
+  private String translateTXBytes( Hex hex, List< String > srcList )
+  {
+    Arrays.fill( txd, null );
+    Arrays.fill( txb, 0 );
+    Arrays.fill( txdIndex, -1 );
+    txdCount = hex == null ? 0 : hex.length();
 
-  private String analyzeTXBytes( Hex hex, int[] togData, List< String > srcList )
+    if ( txdCount == 0 )
+    {
+      return " <none>\n";
+    }
+    
+    String txStr = "";
+    for ( int i = 0; i < txdCount; i++ )
+    {
+      short val = hex.getData()[ i ];
+      txb[ i ] = ( ( val >> 4 ) & 0x07 ) + 1;
+      boolean flag = ( val & 0x80 ) > 0;
+      txdIndex[ i ] = val & 0x0F;
+      int addr = 0xD0 + txdIndex[ i ];
+      String label = getZeroLabel( addr );
+      txStr += " " + ( flag ? "~" : "" ) + label + ":" + txb[ i ];
+      String irpLabel = irpLabel( addr );
+      if ( srcList != null && !srcList.contains( irpLabel ) )
+      {
+        srcList.add( irpLabel );
+      }
+      txd[ i ] = new OpTree( ( flag ? "~" : "" ) + irpLabel );
+    }
+    return txStr + "\n";
+  }
+
+  private void analyzeTXBytes( int[] togData )
   {
     int togIndex = 0x100;
     int togPos = 0x100;
     int togEnd = 0x100;
     int togCount = 0;
-    String txStr = "";
-    if ( hex == null || hex.length() == 0 )
+    if ( txdCount == 0 )
     {
       irpParts[ 11 ] = null;
-      return " <none>\n";
+      return;
     }
     irpParts[ 11 ] = "";
-    short[] data = hex.getData();
     int bitCount = 0;
     int mid = 0x100;
 
@@ -4629,10 +4697,9 @@ public class MAXQ610data
     {
       mid = pf[ 4 ] & 0x7F;
     }
-    for ( short val : data )
+    for ( int i = 0; i < txdCount; i++ )
     {
-      int n = ( val >> 4 ) & 0x07;
-      n++;
+      int n = txb[ i ];
       bitCount += n;     
       int rem = -1;
       if ( togData != null && ( togData[ 1 ] == 1 
@@ -4653,23 +4720,21 @@ public class MAXQ610data
         rem = bitCount - mid;
         n -= rem;
       }
-      boolean flag = ( val & 0x80 ) > 0;
-      boolean togComp = togData != null ? ( togData[ 5 ] & 0x08 ) > 0 : false;
-      togComp = togCount == 1 ? false : flag && !togComp || !flag && togComp;
-      int addr = 0xD0 + ( val & 0x0F );
-      String irpLabel = irpLabel( addr );
-      if ( srcList != null && !srcList.contains( irpLabel ) )
+      if ( txd == null || txd[ i ] == null )
       {
-        srcList.add( irpLabel );
+        // Error situation, so abort analysis
+        irpParts[ 11 ] = null;
+        return;
       }
       
-      String label = getZeroLabel( addr );
-      txStr += " " + ( flag ? "~" : "" ) + label + ":" + ( n + Math.max( 0, rem ) );
-      String valStr = ( flag ? "~" : "" ) + irpLabel( label );
+      String valStr = txd[ i ].lsbEvaluate();
+      boolean flag = valStr.startsWith( "~" );
+      boolean togComp = togData != null ? ( togData[ 5 ] & 0x08 ) > 0 : false;
+      togComp = togCount == 1 ? false : flag && !togComp || !flag && togComp;    
       int togBits = Math.max( Math.min( togEnd+1, n ) - togPos, 0 );
       if ( n > 0 )
       {
-        if ( togIndex == ( val & 0x0F ) && togPos < n )
+        if ( togIndex == txdIndex[ i ] && togPos < n )
         {
           if ( togPos > 0 )
           {
@@ -4705,7 +4770,7 @@ public class MAXQ610data
         }
 
         int togRem = togCount - togBits;
-        if ( togIndex == ( val & 0x0F ) && togEnd + 1 > n && togPos < n+rem )
+        if ( togIndex == txdIndex[ i ] && togEnd + 1 > n && togPos < n+rem )
         {
           if ( togPos > n )
           {
@@ -4735,8 +4800,7 @@ public class MAXQ610data
         mid = 0x100;
       }
     }
-    txStr += "\n";
-    return txStr;
+    return;
   }
   
   private String irpLabel( String label )

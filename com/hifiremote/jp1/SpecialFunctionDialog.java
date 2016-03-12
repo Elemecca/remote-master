@@ -778,11 +778,6 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         firstMacroLabel.setText( "Short keys:" );
         secondMacroLabel.setText( "Long keys:" );
       }
-      else if ( typeStr.equals( "Pause" ) )
-      {
-        cardStr = "Pause";
-        enableMacros( false );
-      }
       else if ( typeStr.equals( "ToadTog" ) )
       {
         enableMacros( true );
@@ -803,6 +798,10 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         cardStr = "ULDKP";
         firstKeyLabel.setText( "Single Key:" );
         secondKeyLabel.setText( "Double Key:" );
+        enableMacros( false );
+      }
+      else if ( typeStr.equals( "Multiplex" ) || typeStr.equals( "Pause" ))
+      {
         enableMacros( false );
       }
       else
