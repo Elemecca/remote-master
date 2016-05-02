@@ -105,9 +105,12 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
     boundKey.addActionListener( this );
     panel.add( boundKey );
 
-    shift.setText( remote.getShiftLabel() );
-    shift.addActionListener( this );
-    panel.add( shift );
+    if ( remote.getShiftEnabled() )
+    {
+      shift.setText( remote.getShiftLabel() );
+      shift.addActionListener( this );
+      panel.add( shift );
+    }
 
     if ( remote.getXShiftEnabled() )
     {
@@ -314,10 +317,13 @@ public class KeyMoveDialog extends JDialog implements ActionListener, PropertyCh
       movedKey.addActionListener( this );
       panel.add( movedKey );
 
-      shiftMovedKey.setText( remote.getShiftLabel() );
-      shiftMovedKey.setVisible( false );
-      shiftMovedKey.addActionListener( this );
-      panel.add( shiftMovedKey );
+      if ( remote.getShiftEnabled() )
+      {
+        shiftMovedKey.setText( remote.getShiftLabel() );
+        shiftMovedKey.setVisible( false );
+        shiftMovedKey.addActionListener( this );
+        panel.add( shiftMovedKey );
+      }
 
       if ( remote.getXShiftEnabled() )
       {

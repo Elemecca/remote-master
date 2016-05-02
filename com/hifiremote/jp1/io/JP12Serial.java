@@ -35,7 +35,6 @@ public class JP12Serial extends IO
     if ( getInterfaceVersion().compareTo( "0.18a" ) > 0 )
     {
       type = getJP12InterfaceType();
-      System.err.println( "Interface type = " + type );
     }
     return type;
   }

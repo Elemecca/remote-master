@@ -174,7 +174,7 @@ public class RemoteConfiguration
 
     loadBuffer( pr );
     
-    int e2FormatOffset = remote.getProcessor().getE2FormatOffset();
+    int e2FormatOffset = remote.getE2FormatOffset();
     if ( e2FormatOffset >= 0 )
     {
       char[] val = new char[ 6 ];
@@ -1909,7 +1909,7 @@ public class RemoteConfiguration
   public void loadSegments( boolean decode )
   {
     // first two bytes are checksum, and in XSight remotes next 18 bytes are E2 info
-    int pos = remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
+    int pos = remote.getE2FormatOffset() >= 0 ? 20 : 2;
     int segLength = 0;
     int segType = 0;
     segmentLoadOrder.addAll( remote.getSegmentTypes() );
@@ -2032,7 +2032,8 @@ public class RemoteConfiguration
       for ( Segment segment : keyMoveKeyList )
       {
         Hex hex = segment.getHex();
-        KeyMove keyMove = new KeyMoveKey( hex.getData()[ 1 ], hex.getData()[ 0 ], hex.getData()[ 2 ], hex.get( 3 ), hex.getData()[ 5 ], null );
+        int deviceButtonIndex = remote.hasDeviceSelection() ? hex.getData()[ 0 ] : 0;
+        KeyMove keyMove = new KeyMoveKey( hex.getData()[ 1 ], deviceButtonIndex, hex.getData()[ 2 ], hex.get( 3 ), hex.getData()[ 5 ], null );
         keyMove.setSegmentFlags( segment.getFlags() );
         segment.setObject( keyMove );
         keymoves.add( keyMove );
@@ -2044,16 +2045,17 @@ public class RemoteConfiguration
       for ( Segment segment : keyMoveEFCList )
       {
         Hex hex = segment.getHex();
+        int deviceButtonIndex = hex.getData()[ 0 ];
         if ( remote.getAdvCodeFormat() == AdvancedCode.Format.EFC )
         {
-          KeyMove keyMove = new KeyMoveEFC5( hex.getData()[ 1 ], hex.getData()[ 0 ], hex.getData()[ 2 ], hex.get( 3 ), ( hex.getData()[ 5 ] << 16 ) + hex.get( 6 ), null );
+          KeyMove keyMove = new KeyMoveEFC5( hex.getData()[ 1 ], deviceButtonIndex, hex.getData()[ 2 ], hex.get( 3 ), ( hex.getData()[ 5 ] << 16 ) + hex.get( 6 ), null );
           keyMove.setSegmentFlags( segment.getFlags() );
           segment.setObject( keyMove );
           keymoves.add( keyMove );
         }
         else
         {
-          KeyMove keyMove = new KeyMove( hex.getData()[ 1 ], hex.getData()[ 0 ], hex.getData()[ 2 ], hex.get( 3 ), hex.subHex( 6, 2 ), null );
+          KeyMove keyMove = new KeyMove( hex.getData()[ 1 ], deviceButtonIndex, hex.getData()[ 2 ], hex.get( 3 ), hex.subHex( 6, 2 ), null );
           keyMove.setSegmentFlags( segment.getFlags() );
           segment.setObject( keyMove );
           keymoves.add( keyMove );
@@ -2124,14 +2126,15 @@ public class RemoteConfiguration
       {
         Hex hex = segment.getHex();
         LearnedSignal ls = null;
+        int deviceButtonIndex = remote.hasDeviceSelection() ? hex.getData()[ 0 ] : 0;
         if ( remote.getProcessor().getEquivalentName().equals( "MAXQ610" ) )
         {
           // hex.getData[ 3 ] seems always to be 0 and is not stored in the learned signal
-          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 1, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
+          ls = new LearnedSignal( hex.getData()[ 1 ], deviceButtonIndex, 1, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
         }
         else
         {
-          ls = new LearnedSignal( hex.getData()[ 1 ], hex.getData()[ 0 ], 0, hex.subHex( 2 ), null );
+          ls = new LearnedSignal( hex.getData()[ 1 ], deviceButtonIndex, 0, hex.subHex( 2 ), null );
         }
         ls.setSegmentFlags( segment.getFlags() );
         if ( remote.usesEZRC() )
@@ -3767,7 +3770,7 @@ public class RemoteConfiguration
       ProtocolManager.getProtocolManager().reset();
     }
     
-    int e2FormatOffset = remote.getProcessor().getE2FormatOffset();
+    int e2FormatOffset = remote.getE2FormatOffset();
     if ( e2FormatOffset >= 0 )
     {
       char[] val = new char[ 6 ];
@@ -3783,6 +3786,9 @@ public class RemoteConfiguration
       }
       eepromFormatVersion = isNull ? null : new String( val );               
     }
+    
+//    String chk = Integer.toHexString( remote.getCheckSums()[ 0 ].calculateCheckSum( data, 2, 0x0FFF ) & 0xFFFF );
+
     
     if ( remote.isSSD() )
     {
@@ -5063,7 +5069,8 @@ public class RemoteConfiguration
       updateActivities();
       updateFavorites();
       int pos = 2;
-      int e2Offset = remote.getProcessor().getE2FormatOffset();
+      int e2Offset = remote.getE2FormatOffset();
+      
       if ( e2Offset >= 0 )
       {
         Arrays.fill( data, 0, 20, ( short )0xFF );
@@ -8222,6 +8229,7 @@ public class RemoteConfiguration
     else if ( hasSegments() )
     {
       initializeSegments();
+      owner.resetSegmentPanel();
     }
     else
     {

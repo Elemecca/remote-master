@@ -1,3 +1,13 @@
+Changes for v2.04
+-- Release build 1
+- Add new checksum class, Xor16Checksum, and new RDF syntax for it (Graham)
+- Add new entry DeviceSelection and update syntax for SoftDev and PunchThru in RDF [General] section (Graham)
+- Update syntax for RDF [DeviceButtons] section to allow PunchThru bytes to be specified when PunchThru=none (Graham)
+- Update version to v2.04 build 1 (but revisions for this version may not yet be complete) (Graham)
+- Fix a few minor bugs (Graham)
+- Update digitmaps.bin to 644 (Dave Reed, Graham)
+- Update jp12serial to v0.21 instead of v0.20 to support JP1.4N (Graham)
+
 Changes for v2.03
 -- Alpha 8 --
 - Add support for XSight Lite and ARRX12G, remotes that have a direct USB interface.

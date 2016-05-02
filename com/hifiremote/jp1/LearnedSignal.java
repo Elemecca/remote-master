@@ -73,13 +73,16 @@ public class LearnedSignal extends Highlight
     int keyCode = reader.read();
     int type = reader.read();
     int deviceButtonIndex = 0;
-    if ( remote.getLearnedDevBtnSwapped() )
+    if ( remote.hasDeviceSelection() )
     {
-      deviceButtonIndex = type & 0x0F;
-    }
-    else
-    {
-      deviceButtonIndex = type >> 4;
+      if ( remote.getLearnedDevBtnSwapped() )
+      {
+        deviceButtonIndex = type & 0x0F;
+      }
+      else
+      {
+        deviceButtonIndex = type >> 4;
+      }
     }
     int length = reader.read();
     short[] data = reader.read( length );

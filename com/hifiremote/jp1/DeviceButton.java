@@ -229,6 +229,16 @@ public class DeviceButton extends Highlight
     return buttonIndex;
   }
 
+  public short[] getPTdefaults()
+  {
+    return ptDefaults;
+  }
+
+  public void setPTdefaults( short[] ptDefaults )
+  {
+    this.ptDefaults = ptDefaults;
+  }
+
   public DeviceButton getVolumePT()
   {
     return volumePT;
@@ -281,6 +291,7 @@ public class DeviceButton extends Highlight
   private int favoriteWidth = 0;
   private int vpt = 0;
   private boolean constructed = false;
+  private short[] ptDefaults = null;
   
   private HashMap< Button, String > softButtonNames = null;
   private HashMap< Button, String > softFunctionNames = null;
@@ -382,10 +393,20 @@ public class DeviceButton extends Highlight
     if ( getSegment() != null )
     {
       Hex hex = getSegment().getHex();
-      // If device type is 0xFF, ie slot is empty, the PT values are all 0xFF
-      hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( volumePT.getButtonIndex(), 0 ) ), 6 );
-      hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( transportPT.getButtonIndex(), 0 ) ), 7 );
-      hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( channelPT.getButtonIndex(), 0 ) ), 8 );
+      if ( ptDefaults != null )
+      {
+        for ( int i = 0; i < ptDefaults.length; i++ )
+        {
+          hex.set( ptDefaults[ i ], i + 6 );
+        }
+      }
+      if ( !remote.getPunchThru().isEmpty() )
+      {
+        // If device type is 0xFF, ie slot is empty, the PT values are all 0xFF
+        hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( volumePT.getButtonIndex(), 0 ) ), 6 );
+        hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( transportPT.getButtonIndex(), 0 ) ), 7 );
+        hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( channelPT.getButtonIndex(), 0 ) ), 8 );
+      }
     }
     else if ( remote.getSegmentTypes() != null )
     {
@@ -393,6 +414,13 @@ public class DeviceButton extends Highlight
       Arrays.fill( hex.getData(), ( short )0xFF );
       hex.set( ( short )buttonIndex, 0 );
       hex.set( ( short )0, 1 );
+      if ( ptDefaults != null )
+      {
+        for ( int i = 0; i < ptDefaults.length; i++ )
+        {
+          hex.set( ptDefaults[ i ], i + 6 );
+        }
+      }
       setSegment( new Segment( 0, 0xFF, hex ) );
     }
   }

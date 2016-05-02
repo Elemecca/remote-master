@@ -265,6 +265,11 @@ public class SegmentPanel extends RMPanel implements ActionListener, ListSelecti
       }
     }
   }
+  
+  public void resetLastSorted()
+  {
+    lastSorted = false;
+  }
 
   private void setButtons()
   {

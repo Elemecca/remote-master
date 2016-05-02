@@ -156,16 +156,6 @@ public abstract class Processor
     this.addressLength = addressLength;
   }
   
-  public int getE2FormatOffset()
-  {
-    return e2FormatOffset;
-  }
-
-  public void setE2FormatOffset( int e2FormatOffset )
-  {
-    this.e2FormatOffset = e2FormatOffset;
-  }
-
   /**
    * Translate.
    * 
@@ -818,9 +808,6 @@ public abstract class Processor
   
   /** Whether processor uses 2-byte or 4-byte addresses */
   private int addressLength = 2;
-  
-  /** Offset in E2 area of format version, -1 if absent */
-  private int e2FormatOffset = -1;
   
   /** Index to style of PF and PD data */
   private int dataStyle = 0;

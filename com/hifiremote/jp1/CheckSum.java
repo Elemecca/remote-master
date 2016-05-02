@@ -83,10 +83,10 @@ public abstract class CheckSum
   }
 
   /** The check sum address. */
-  private int checkSumAddress;
+  protected int checkSumAddress;
 
   /** The address range. */
-  private AddressRange addressRange;
+  protected AddressRange addressRange;
   
-  private boolean complement = false;
+  protected boolean complement = false;
 }

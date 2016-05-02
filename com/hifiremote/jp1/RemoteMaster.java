@@ -115,8 +115,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   private static JP1Frame frame = null;
 
   /** Description of the Field. */
-  public final static String version = "v2.03";
-  public final static int buildVer = 15;
+  public final static String version = "v2.04";
+  public final static int buildVer = 1;
   
   public static int getBuild()
   {
@@ -727,6 +727,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       initializeToFFItem.setEnabled( true );
       setBaselineItem.setEnabled( true );
       uploadAction.setEnabled( true );
+      resetSegmentPanel();
       update();
       changed = remoteConfig != null ? !Hex.equals( remoteConfig.getSavedData(), remoteConfig.getData() ) : false;
       if ( file != null )
@@ -2707,6 +2708,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     initializeToFFItem.setEnabled( !interfaces.isEmpty() );
     setBaselineItem.setEnabled( true );
     uploadAction.setEnabled( !interfaces.isEmpty() );
+    resetSegmentPanel();
     setInterfaceState( "LOADING..." );
     ( new LoadTask( file ) ).execute();
     return;
@@ -3324,6 +3326,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
         IO ioOut = testInterface( temp, null, file, use );
         if ( ioOut != null )
         {
+          System.err.println( "Opened interface type " + Integer.toHexString( ioOut.getInterfaceType() ) );
           return ioOut;
         }
       }
@@ -5118,5 +5121,13 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     }
     System.err.println();
     System.err.println();
+  }
+  
+  public void resetSegmentPanel()
+  {
+    if ( segmentPanel != null )
+    {
+      segmentPanel.resetLastSorted();
+    }
   }
 }

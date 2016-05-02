@@ -298,7 +298,7 @@ public class SegmentTableModel extends JP1TableModel< Segment >
     int base = remote.getBaseAddress();
     
     // first two bytes are checksum, and in XSight remotes next 18 bytes are E2 info
-    int pos = remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
+    int pos = remote.getE2FormatOffset() >= 0 ? 20 : 2;
     int segLength = 0;
     while ( pos < remote.getEepromSize() && ( segLength = Hex.get( dataToShow, pos ) ) <= remote.getEepromSize() - pos  )
     {
@@ -317,13 +317,19 @@ public class SegmentTableModel extends JP1TableModel< Segment >
   public void updateData()
   {
     Remote remote = config.getRemote();
-    int pos = remote.usesEZRC() || remote.usesSimpleset() ? 20 : 2;
+    int pos = remote.getE2FormatOffset() >= 0 ? 20 : 2;
     if ( useSavedData() )
     {
       pos = Segment.writeData( data, config.getSavedData(), pos );
-      XorCheckSum cs = new XorCheckSum( 0, new AddressRange( 2, pos - 1 ), false );
-      cs.setCheckSum( config.getSavedData() );
-      Hex.put( 0xFFFF, config.getSavedData(), pos );
+      for ( int i = pos; i < config.getSavedData().length; i++ )
+      {
+        config.getSavedData()[ i ] = 0xFF;
+      }
+      CheckSum[] sums = remote.getCheckSums();
+      for ( int i = 0; i < sums.length; ++i )
+      {
+        sums[ i ].setCheckSum( config.getSavedData() );
+      }
       return;
     }
     else

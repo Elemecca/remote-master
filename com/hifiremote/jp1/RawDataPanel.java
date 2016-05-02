@@ -157,6 +157,8 @@ public class RawDataPanel extends RMPanel
       signatureLabel.setText( "Signature:  " + sig );
       processorLabel.setText( "Processor:  " + remote.getProcessorDescription() );
       interfaceLabel.setText( "Interface:  " + remote.getInterfaceType() );
+      versionLabel1.setText( "" );
+      versionLabel2.setText( "" );
       int n = 1;
       if ( remote.getExtenderVersionParm() != null )
       {
@@ -164,12 +166,8 @@ public class RawDataPanel extends RMPanel
             remote.getExtenderVersionParm().getExtenderVersion( remoteConfig ) );
         n++;
       }
-//      else
-//      {
-//        extenderLabel.setText( "" );
-//      }
       String text = remoteConfig.getEepromFormatVersion();
-      if ( text != null )
+      if ( text != null && !text.equals( sig ) )
       {
         JLabel lbl = ( n == 1 ) ? versionLabel1 : versionLabel2;
         lbl.setText( "E2 format version: " + text );

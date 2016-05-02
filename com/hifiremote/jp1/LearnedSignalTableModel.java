@@ -71,6 +71,10 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     {
       ++count;
     }
+    if ( remoteConfig != null && !remoteConfig.getRemote().hasDeviceSelection() )
+    {
+      --count;
+    }
     return count;
   }
   
@@ -79,6 +83,10 @@ public class LearnedSignalTableModel extends JP1TableModel< LearnedSignal >
     if ( col > 0 && ( remoteConfig == null || !remoteConfig.getRemote().usesEZRC() ) )
     {
       col++;   // Skip name column
+    }
+    if ( col > 1 && ( remoteConfig != null && !remoteConfig.getRemote().hasDeviceSelection() ) )
+    {
+      col++;   // Skip Device Button column
     }
     return col;
   }

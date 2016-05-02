@@ -1088,6 +1088,16 @@ public class Remote implements Comparable< Remote >
     load();
     return processor;
   }
+  
+  public int getE2FormatOffset()
+  {
+    if ( processor.getName().equals( "MAXQ622" ) 
+        || checkSums[ 0 ] instanceof Xor16CheckSum )
+    {
+      return 6;
+    }
+    return -1;
+  }
 
   /**
    * Gets the rAM address.
@@ -1290,6 +1300,10 @@ public class Remote implements Comparable< Remote >
       {
         keyMoveSupport = RDFReader.parseFlag( value );
       }
+      else if ( parm.equals( "DeviceSelection" ) )
+      {
+        deviceSelection = RDFReader.parseFlag( value );
+      }
       else if ( parm.equals( "MacroSupport" ) )
       {
         macroSupport = RDFReader.parseFlag( value );
@@ -1305,7 +1319,14 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equalsIgnoreCase( "PunchThru" ) )
       {
-        punchThru = value;
+        if ( value.equalsIgnoreCase( "none" ) )
+        {
+          punchThru = "";
+        }
+        else
+        {
+          punchThru = value;
+        }
       }
       else if ( parm.equals( "UpgradeAddr" ) )
       {
@@ -1856,6 +1877,10 @@ public class Remote implements Comparable< Remote >
       {
         sum = new AddCheckSum( addr, range, comp );
       }
+      else if ( ch == '*' )
+      {
+        sum = new Xor16CheckSum( addr, range, comp );
+      }
       else
       {
         sum = new XorCheckSum( addr, range, comp );
@@ -2039,6 +2064,7 @@ public class Remote implements Comparable< Remote >
       int hiAddr = 0;
       int lowAddr = 0;
       int typeAddr = 0;
+      List< Integer > ptDefList = new ArrayList< Integer >();
       if ( segmentTypes == null )
       {
         hiAddr = RDFReader.parseNumber( st.nextToken() );
@@ -2051,8 +2077,33 @@ public class Remote implements Comparable< Remote >
       else
       {
         index = RDFReader.parseNumber( st.nextToken() );
+        if ( punchThru.isEmpty() )
+        {
+          // Punch-through bytes have a non-standard use and can be set in the RDF
+          while ( st.hasMoreTokens() )
+          {
+            try
+            {
+              int val = RDFReader.parseNumber( st.nextToken() );
+              ptDefList.add( val );
+            }
+            catch ( NumberFormatException nfe )
+            {
+              break;
+            }
+          }
+        }
       }
       DeviceButton db = new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode, index, deviceCodeOffset );
+      if ( ptDefList.size() > 0 )
+      {
+        short[] ptDefaults = new short[ ptDefList.size() ];
+        for ( int i = 0; i < ptDefList.size(); i++ )
+        {
+          ptDefaults[ i ] = ( short )( ptDefList.get( i ) & 0xFF );
+        }
+        db.setPTdefaults( ptDefaults );
+      }
       if ( isSSD() )
       {
         // System icons seem to have type 5
@@ -3216,7 +3267,8 @@ public class Remote implements Comparable< Remote >
     }
     else if ( name.equals( "S3F80" ) )
     {
-      return  isSSD() ? "JPUSB" : segmentTypes == null ? "JP1.3" : "JP1.4";
+      return  isSSD() ? "JPUSB" : segmentTypes == null ? "JP1.3" 
+          : checkSums[ 0 ] instanceof Xor16CheckSum ? "JP1.4N" : "JP1.4";
     }
     else if ( name.equals( "SST" ) )
     {
@@ -3602,6 +3654,19 @@ public class Remote implements Comparable< Remote >
   public boolean hasKeyMoveSupport()
   {
     return keyMoveSupport;
+  }
+  
+  private boolean deviceSelection = true;
+  
+  /**
+   *  Certain remotes, such as the URC-6820Z Zapper+, support more than one device
+   *  but have no means of selecting between them.  Instead there are fixed punchthroughs
+   *  that assign certain buttons to each device that has an assigned setup code.  For
+   *  such remotes, hasDeviceSelection() will return false. 
+   */
+  public boolean hasDeviceSelection()
+  {
+    return deviceSelection;
   }
 
   /** The upgrade address. */
