@@ -253,8 +253,11 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
       + ".bin file rather than a .rmir file, you may create any missing upgrades by pressing the \"Create missing "
       + "upgrades\"  button.  If this button is present but disabled (grayed out), it means that there are no missing "
       + "upgrades.";
-    String text = remote.usesSimpleset() ? message4 : remote.usesEZRC() ? message3 : softDevices != null && softDevices.isSetupCodesOnly() ? 
-        "Note:  " + message1 : "Note:  " + message2;
+    String message5 = "This remote supports more than one device but has no means of device selection.  The device "
+      + "controlled by any button is determined by a fixed internal algorithm dependent on which devices have assigned "
+      + "setup codes.";
+    String text = !remote.hasDeviceSelection() ? message5 : remote.usesSimpleset() ? message4 : remote.usesEZRC() ? message3 : 
+      softDevices != null && softDevices.isSetupCodesOnly() ? "Note:  " + message1 : "Note:  " + message2;
     messageArea.setText( text );
     messageArea.setVisible( softDevices != null );
 
