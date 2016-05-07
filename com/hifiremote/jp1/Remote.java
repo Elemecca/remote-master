@@ -2077,26 +2077,29 @@ public class Remote implements Comparable< Remote >
       else
       {
         index = RDFReader.parseNumber( st.nextToken() );
-        if ( punchThru.isEmpty() )
+        // Punch-through bytes with a non-standard use can be set in the RDF
+        while ( st.hasMoreTokens() )
         {
-          // Punch-through bytes have a non-standard use and can be set in the RDF
-          while ( st.hasMoreTokens() )
+          try
           {
-            try
+            String token = st.nextToken();
+            if ( !token.startsWith( "$" ) )
             {
-              int val = RDFReader.parseNumber( st.nextToken() );
-              ptDefList.add( val );
-            }
-            catch ( NumberFormatException nfe )
-            {
+              // Values are interpreted as punchthrough bytes only if they have hex form with $ prefix
               break;
             }
+            int val = RDFReader.parseNumber( token );
+            ptDefList.add( val );
+          }
+          catch ( Exception ex )
+          {
+            break;
           }
         }
       }
       DeviceButton db = new DeviceButton( name, hiAddr, lowAddr, typeAddr, defaultSetupCode, index, deviceCodeOffset );
       if ( ptDefList.size() > 0 )
-      {
+      { 
         short[] ptDefaults = new short[ ptDefList.size() ];
         for ( int i = 0; i < ptDefList.size(); i++ )
         {

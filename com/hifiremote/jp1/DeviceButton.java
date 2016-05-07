@@ -390,38 +390,42 @@ public class DeviceButton extends Highlight
   
   public void store( Remote remote )
   {
+    Hex hex= null;    
     if ( getSegment() != null )
     {
-      Hex hex = getSegment().getHex();
-      if ( ptDefaults != null )
-      {
-        for ( int i = 0; i < ptDefaults.length; i++ )
-        {
-          hex.set( ptDefaults[ i ], i + 6 );
-        }
-      }
-      if ( !remote.getPunchThru().isEmpty() )
-      {
-        // If device type is 0xFF, ie slot is empty, the PT values are all 0xFF
-        hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( volumePT.getButtonIndex(), 0 ) ), 6 );
-        hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( transportPT.getButtonIndex(), 0 ) ), 7 );
-        hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( channelPT.getButtonIndex(), 0 ) ), 8 );
-      }
+      hex = getSegment().getHex();
     }
     else if ( remote.getSegmentTypes() != null )
     {
-      Hex hex = new Hex( 12 );
+      // Create unset segment for this device button
+      hex = new Hex( 12 );
       Arrays.fill( hex.getData(), ( short )0xFF );
       hex.set( ( short )buttonIndex, 0 );
       hex.set( ( short )0, 1 );
-      if ( ptDefaults != null )
-      {
-        for ( int i = 0; i < ptDefaults.length; i++ )
-        {
-          hex.set( ptDefaults[ i ], i + 6 );
-        }
-      }
       setSegment( new Segment( 0, 0xFF, hex ) );
+    }
+    
+    String pt = remote.getPunchThru();
+    int ptDefLen = ptDefaults == null ? 0 : ptDefaults.length;
+    
+    // Set punchthrough defaults, if any
+    for ( int i = 0; i < ptDefLen; i++ )
+    {
+      hex.set( ptDefaults[ i ], i + 6 );
+    }
+    
+    // Set device buttons for those PTs specified in RDF, and for others with no explicit default 
+    if ( pt.indexOf( 'V' ) >= 0 || ptDefLen < 1 )
+    {  
+      hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( volumePT.getButtonIndex(), 0 ) ), 6 );
+    }
+    if ( pt.indexOf( 'T' ) >= 0 || ptDefLen < 2 )
+    {
+      hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( transportPT.getButtonIndex(), 0 ) ), 7 );
+    }
+    if ( pt.indexOf( 'C' ) >= 0 || ptDefLen < 3 )
+    {
+      hex.set( ( short )( hex.getData()[ 2 ] == 0xFF ? 0xFF : Math.max( channelPT.getButtonIndex(), 0 ) ), 8 );
     }
   }
 }
