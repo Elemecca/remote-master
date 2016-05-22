@@ -9,6 +9,8 @@ Changes for v2.04
 - Update jp12serial to v0.21 instead of v0.20 to support JP1.4N (Graham)
 -- Private build 2
 - Modify syntax for RDF [DeviceButtons] section to allow default PunchThru bytes to be specified for all settings of PunchThru in [General] section (Graham)
+-- Private builds 3, 4
+- Fix minor bugs in build 2
 
 Changes for v2.03
 -- Alpha 8 --

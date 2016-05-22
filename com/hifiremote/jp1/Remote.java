@@ -1092,7 +1092,7 @@ public class Remote implements Comparable< Remote >
   public int getE2FormatOffset()
   {
     if ( processor.getName().equals( "MAXQ622" ) 
-        || checkSums[ 0 ] instanceof Xor16CheckSum )
+        || checkSums.length > 0 && checkSums[ 0 ] instanceof Xor16CheckSum )
     {
       return 6;
     }
@@ -3271,7 +3271,7 @@ public class Remote implements Comparable< Remote >
     else if ( name.equals( "S3F80" ) )
     {
       return  isSSD() ? "JPUSB" : segmentTypes == null ? "JP1.3" 
-          : checkSums[ 0 ] instanceof Xor16CheckSum ? "JP1.4N" : "JP1.4";
+          : checkSums.length > 0 && checkSums[ 0 ] instanceof Xor16CheckSum ? "JP1.4N" : "JP1.4";
     }
     else if ( name.equals( "SST" ) )
     {

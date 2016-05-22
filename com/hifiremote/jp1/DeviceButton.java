@@ -390,7 +390,7 @@ public class DeviceButton extends Highlight
   
   public void store( Remote remote )
   {
-    Hex hex= null;    
+    Hex hex = null;    
     if ( getSegment() != null )
     {
       hex = getSegment().getHex();
@@ -403,6 +403,11 @@ public class DeviceButton extends Highlight
       hex.set( ( short )buttonIndex, 0 );
       hex.set( ( short )0, 1 );
       setSegment( new Segment( 0, 0xFF, hex ) );
+    }
+    else
+    {
+      // Remote does not have segments
+      return;
     }
     
     String pt = remote.getPunchThru();
