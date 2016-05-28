@@ -148,7 +148,7 @@ public class RawDataPanel extends RMPanel
       model.set( dataToShow, remote.getBaseAddress() );
       byteRenderer.setRemoteConfig( remoteConfig );
       highlight = remoteConfig.getHighlight();
-      settingAddresses = remote.getSettingAddresses();
+      settingAddresses = remoteConfig.hasSegments() ? remoteConfig.getSettingMap() : remote.getSettingAddresses();
       String sig = remoteConfig.getSigString();
       if ( sig == null )
       {

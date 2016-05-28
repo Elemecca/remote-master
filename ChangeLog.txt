@@ -11,6 +11,9 @@ Changes for v2.04
 - Modify syntax for RDF [DeviceButtons] section to allow default PunchThru bytes to be specified for all settings of PunchThru in [General] section (Graham)
 -- Private builds 3, 4
 - Fix minor bugs in build 2
+-- Private build 5
+- Added support for a multi-line Notes field in the [General] section of the RDF (Graham)
+- Added support for [Settings] entries for segmented remotes for bits from any segment type (Graham)
 
 Changes for v2.03
 -- Alpha 8 --

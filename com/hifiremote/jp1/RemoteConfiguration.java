@@ -4410,9 +4410,22 @@ public class RemoteConfiguration
   {
     System.err.println( "Decoding settings" );
     Setting[] settings = remote.getSettings();
+    List< Segment > segs = null;
     for ( Setting setting : settings )
     {
-      setting.decode( data, remote );
+      if ( hasSegments() )
+      {
+        int type = ( setting.getByteAddress() >> 8 ) - 1; 
+        if ( type < 0 || ( segs = segments.get( type ) ) == null || segs.size() == 0 )
+        {
+          continue;
+        }
+        setting.decode( segs.get( 0 ).getHex().getData(), remote );
+      }
+      else
+      {
+        setting.decode( data, remote );
+      }
     }
   }
 
@@ -5107,6 +5120,21 @@ public class RemoteConfiguration
       Hex.put( 0xFFFF, data, pos );
       remote.getUsageRange().setFreeStart( pos + 2 );
       
+      settingMap.clear();
+      for ( int key : remote.getSettingAddresses().keySet() )
+      {
+        int segmentType = ( key >> 8 ) - 1;
+        int byteAddress = key & 0xFF;
+        List< Segment > segs = segments.get( segmentType );
+        if ( segs == null || segs.size() == 0 )
+        {
+          continue;
+        }
+        int address = segs.get( 0 ).getAddress();
+        int offset = address + 4 + byteAddress;
+        settingMap.put(  offset, remote.getSettingAddresses().get( key ) );
+      }
+      
       updateKeyMoveHighlights( keymoves );
       updateKeyMoveHighlights( upgradeKeyMoves );
       updateMacroHighlights();
@@ -5141,6 +5169,11 @@ public class RemoteConfiguration
     }
     updateCheckSums();
     checkImageForByteOverflows();
+  }
+
+  public HashMap< Integer, Integer > getSettingMap()
+  {
+    return settingMap;
   }
 
   private void updateKeyMoveHighlights( List< KeyMove > keyMoves )
@@ -6520,16 +6553,25 @@ public class RemoteConfiguration
    */
   private void updateSettings()
   {
-    if ( hasSegments() )
-    {
-      return;
-    }
     Setting[] settings = remote.getSettings();
+    List< Segment > segs = null;
     for ( Setting setting : settings )
     {
+      if ( hasSegments() )
+      {
+        int type = ( setting.getByteAddress() >> 8 ) - 1 ;
+        if ( type < 0 || ( segs = segments.get( type ) ) == null || segs.size() == 0 )
+        {
+          continue;
+        }
+        setting.store( segs.get( 0 ).getHex().getData(), remote );
+      }
+      else
+      {;
+        setting.store( data, remote );
+      }
       int index = remote.getSettingAddresses().get( setting.getByteAddress() );
-      setting.doHighlight( highlight, index, remote );
-      setting.store( data, remote );
+      setting.doHighlight( highlight, index, this );
     }
   }
 
@@ -8104,6 +8146,8 @@ public class RemoteConfiguration
   private LinkedHashMap< Button, Activity > activities = null;
   
   private List< Integer > segmentLoadOrder = new ArrayList< Integer >();
+  
+  private HashMap< Integer, Integer > settingMap = new HashMap< Integer, Integer >();
 
   /** The keymoves. */
   private List< KeyMove > keymoves = new ArrayList< KeyMove >();

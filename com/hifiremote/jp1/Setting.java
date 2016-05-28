@@ -2,6 +2,7 @@ package com.hifiremote.jp1;
 
 import java.awt.Color;
 import java.util.Arrays;
+import java.util.List;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -254,7 +255,9 @@ public class Setting extends Highlight
    */
   public void decode( short[] data, Remote remote )
   {
-    int temp = data[ byteAddress ];
+    int byteAddr = remote.getSegmentTypes() == null ? byteAddress : byteAddress & 0xFF;
+    
+    int temp = data[ byteAddr ];
     if ( remote.getSoftDevices() != null 
         && remote.getSoftDevices().getAllowEmptyButtonSettings()
         && sectionName != null
@@ -271,7 +274,7 @@ public class Setting extends Highlight
       {
         Hex hex = ( ( NamedHex )optionList[ i ] ).getHex();
         int size = hex.length();
-        if ( Hex.subHex( data, byteAddress, size ).equals( hex )  )
+        if ( Hex.subHex( data, byteAddr, size ).equals( hex )  )
         {
           value = i;
           return;
@@ -320,20 +323,21 @@ public class Setting extends Highlight
    */
   public void store( short[] data, Remote remote )
   {
+    int byteAddr = remote.getSegmentTypes() == null ? byteAddress : byteAddress & 0xFF;
     if ( remote.getSoftDevices() != null 
         && remote.getSoftDevices().getAllowEmptyButtonSettings()
         && sectionName != null
         && sectionName.equals( "DeviceButtons" ) 
         && value == getOptions( remote ).length - 1 )
     {
-      data[ byteAddress ] = 0xFF;
+      data[ byteAddr ] = 0xFF;
       return;
     }
     
     if ( numberOfBits == 0 )
     {
       NamedHex nh = ( NamedHex )( optionList[ value ] );
-      Hex.put( nh.getHex().getData(), data, byteAddress );
+      Hex.put( nh.getHex().getData(), data, byteAddr );
       return;
     }
     
@@ -349,10 +353,10 @@ public class Setting extends Highlight
     mask <<= shift;
     mask = ~mask;
 
-    int temp = data[ byteAddress ];
+    int temp = data[ byteAddr ];
     temp &= mask;
     temp |= val;
-    data[ byteAddress ] = ( short )temp;
+    data[ byteAddr ] = ( short )temp;
   }
 
   /**
@@ -366,11 +370,27 @@ public class Setting extends Highlight
     pw.print( title, value );
   }
   
-  public void doHighlight( Color[] highlight, int index, Remote remote )
+  public void doHighlight( Color[] highlight, int index, RemoteConfiguration config )
   {
+    Remote remote = config.getRemote();
     if ( optionList != null && optionList[ value ] instanceof NamedHex )
     {
+      int segmentType = -1;
       int byteAddress = remote.getSettingBytes().get( index );
+      if ( remote.getSegmentTypes() != null )
+      {
+        segmentType = ( byteAddress >> 8 ) - 1;
+        byteAddress &= 0xFF;
+        List< Segment > segs = config.getSegments().get( segmentType );
+        if ( segs == null || segs.size() == 0 )
+        {
+          // Should not occur
+          return;
+        }
+        Segment segment = segs.get( 0 );
+        int address = segment.getAddress();
+        byteAddress += address + 4;
+      }
       NamedHex nh = ( NamedHex ) optionList[ value ];
       int size = nh.getHex().length();
       for ( int i = 0; i < size; i++ )

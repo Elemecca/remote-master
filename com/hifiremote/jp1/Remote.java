@@ -1231,6 +1231,7 @@ public class Remote implements Comparable< Remote >
     String line = null;
     String parm = null;
     String value = null;
+    String rawValue = null;
     boolean hasForceEvenStartsEntry = false;
     while ( true )
     {
@@ -1245,7 +1246,8 @@ public class Remote implements Comparable< Remote >
         StringTokenizer st = new StringTokenizer( line, "=" );
 
         parm = st.nextToken().trim();
-        value = st.nextToken().trim();
+        rawValue = st.nextToken();
+        value = rawValue.trim();
       }
 
       if ( parm.equals( "Name" ) )
@@ -1626,6 +1628,10 @@ public class Remote implements Comparable< Remote >
       {
         activityMapIndex = RDFReader.parseNumber( value );
       }
+      else if ( parm.equalsIgnoreCase( "Notes" ) )
+      {
+        notes = parseNotes( rdr, rawValue );
+      }
 
       // A SoftHT entry should be ignored unless SoftDevices is used.
       if ( softDevices == null )
@@ -1927,8 +1933,19 @@ public class Remote implements Comparable< Remote >
 
       StringTokenizer st = new StringTokenizer( line, "=" );
       String title = st.nextToken();
+      String value = st.nextToken().trim();
+      int pos = value.indexOf( " " );
+      String init = null;
+      int segmentType = -1;
+      if ( pos > 0 && !( init =  value.substring( 0, pos ) ).contains( "." ) )
+      {
+        // Standard setting value is preceded by segment type
+        segmentType = RDFReader.parseNumber( init );
+        value = value.substring( pos ).trim();
+      }
 
-      int byteAddress = RDFReader.parseNumber( st.nextToken( ".= \t" ) );
+      st = new StringTokenizer( value, ".= \t" );
+      int byteAddress = RDFReader.parseNumber( st.nextToken() );
       int bitNumber = RDFReader.parseNumber( st.nextToken() );
       int numberOfBits = RDFReader.parseNumber( st.nextToken() );
       int initialValue = RDFReader.parseNumber( st.nextToken() );
@@ -1959,6 +1976,11 @@ public class Remote implements Comparable< Remote >
       {
         optionsList = options.toArray( new String[ 0 ] );
       }
+      if ( segmentTypes != null )
+      {
+        byteAddress += 0x100 * ( segmentType + 1 );
+      }
+      
       Setting setting = new Setting( title, byteAddress, bitNumber, numberOfBits, initialValue, 
           inverted, optionsList, sectionName );
       work.add( setting );
@@ -2888,6 +2910,25 @@ public class Remote implements Comparable< Remote >
     buttonMaps = work.toArray( buttonMaps );
     return line;
   }
+  
+  private String parseNotes( RDFReader rdr, String line ) throws Exception
+  {
+    line = line.replaceAll("\\s+$","");   // right trim
+    boolean more = line.endsWith( "\\" );
+    StringBuilder sb = new StringBuilder();
+    while ( more )
+    {
+      sb.append( line.substring( 0, line.length() - 1 ) ); 
+      line = rdr.readLine();
+      if ( line == null || ( line = line.trim() ).length() == 0 )
+      {
+        break;
+      }
+      more = line.endsWith( "\\" );
+    }
+    sb.append( line );
+    return sb.toString().replaceAll( "\\\\n", "\n" );
+  }
 
   /**
    * Parses the protocols.
@@ -3544,6 +3585,13 @@ public class Remote implements Comparable< Remote >
 
   /** The device code offset. */
   private int deviceCodeOffset;
+  
+  private String notes = null;
+
+  public String getNotes()
+  {
+    return notes;
+  }
 
   /** The fav key. */
   private FavKey favKey = null;
@@ -3596,6 +3644,23 @@ public class Remote implements Comparable< Remote >
   public boolean hasActivityInitialMacro()
   {
     return segmentTypes != null && ( segmentTypes.contains( 0x1E ) || isSSD() );
+  }
+  
+  public boolean hasSettings()
+  {
+    if ( segmentTypes == null )
+    {
+      return true;
+    }
+    for ( Setting s : settings )
+    {
+      int segmentType = ( s.getByteAddress() >> 8 ) - 1;
+      if ( segmentType >= 0 )
+      {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** The oem device. */

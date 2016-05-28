@@ -46,7 +46,7 @@ public class UnsignedByteRenderer extends DefaultTableCellRenderer
     normalData = remoteConfig.getData();
     savedData = remoteConfig.getSavedData();
     baselineData = remoteConfig.getBaselineData();
-    settingAddresses = remote.getSettingAddresses();
+    settingAddresses = remoteConfig.hasSegments() ? remoteConfig.getSettingMap() : remote.getSettingAddresses();
     highlight = remoteConfig.getHighlight();
   }
 

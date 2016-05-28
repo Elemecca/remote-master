@@ -169,8 +169,14 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     notes.setWrapStyleWord( true );
     notes.getDocument().addDocumentListener( this );
     notesScrollPane = new JScrollPane( notes );
-    notesScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "General Notes" ),
+    notesScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "User Notes" ),
         notesScrollPane.getBorder() ) );
+    
+    remoteNotes = new JTextArea( 6, 20 );
+    remoteNotesScrollPane = new JScrollPane( remoteNotes );
+    remoteNotesScrollPane.setVisible( false );
+    remoteNotesScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Notes" ),
+        remoteNotesScrollPane.getBorder() ) );
 
     JPanel lowerPanel = new JPanel( new BorderLayout() );
     warningPanel = new JPanel( new FlowLayout( FlowLayout.CENTER ) );
@@ -182,9 +188,12 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     Font font2 = font.deriveFont( Font.BOLD, 12 );
     warningLabel.setFont( font2 );
     warningLabel.setForeground( Color.YELLOW );
+    
+    notesPane = new JSplitPane( JSplitPane.HORIZONTAL_SPLIT, remoteNotesScrollPane, notesScrollPane );
+    notesPane.setResizeWeight( 0.4 );
 
     warningPanel.add( warningLabel );
-    lowerPanel.add( notesScrollPane, BorderLayout.CENTER );
+    lowerPanel.add( notesPane, BorderLayout.CENTER );
     lowerPanel.add( warningPanel, BorderLayout.PAGE_END );
 
     mainPane = new JSplitPane( JSplitPane.VERTICAL_SPLIT, upperPane, lowerPanel );
@@ -217,6 +226,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
 
     upperPane.resetToPreferredSizes();
     upperPane.setDividerLocation( ( (double)dd.width )/(dd.width + ds.width) );
+    notesPane.resetToPreferredSizes();
     mainPane.resetToPreferredSizes();
   }
 
@@ -261,7 +271,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     messageArea.setText( text );
     messageArea.setVisible( softDevices != null );
 
-    if ( !remoteConfig.hasSegments() )
+    if ( remote.hasSettings() )
     {
       settingModel.set( remoteConfig );
       settingTable.initColumns( settingModel );
@@ -281,6 +291,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     moveDownButton.setEnabled( false );
     createUpgradesButton.setVisible( remote.usesSimpleset() );
     createUpgradesButton.setEnabled( remoteConfig.getCreatableMissingCodes() != null );
+    remoteNotesScrollPane.setVisible( remote.getNotes() != null );
+    remoteNotes.setText( remote.getNotes() );
 
     text = remoteConfig.getNotes();
     if ( text == null )
@@ -478,6 +490,9 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
   private JScrollPane deviceScrollPane = null;
   private JScrollPane settingsScrollPane = null;
   private JScrollPane notesScrollPane = null;
+  private JScrollPane remoteNotesScrollPane = null;
+  
+  private JSplitPane notesPane = null;
 
   /** The device model. */
   private JP1Table deviceButtonTable = null;
@@ -491,6 +506,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
 
   /** The notes. */
   private JTextArea notes = null;
+  private JTextArea remoteNotes = null;
 
   private JButton editButton = null;
   private JButton moveUpButton = null;
