@@ -7597,18 +7597,19 @@ public class RemoteConfiguration
       segments.remove( 9 );
       for ( LearnedSignal ls : learned )
       {
-        boolean isMAXQ = remote.getProcessor().getEquivalentName().equals( "MAXQ610" );
+        String procName = remote.getProcessor().getEquivalentName();
+        boolean usesFormat1 = procName.equals( "MAXQ610" ) || procName.equals( "TI2541" );
         ls.clearMemoryUsage();
         Hex hex = ls.getData();
         int size = hex.length();
-        int segSize = size + 2 + ( isMAXQ ? 2 : 0 );
+        int segSize = size + 2 + ( usesFormat1 ? 2 : 0 );
         int lenMod = segSize & ( remote.getForceModulus() - 1 );
         segSize += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;
         Hex segData = new Hex( segSize );
         int flags = ls.getSegmentFlags();
         segData.set( ( short )ls.getDeviceButtonIndex(), 0 );
         segData.set( ( short )ls.getKeyCode(), 1 );
-        if ( isMAXQ )
+        if ( usesFormat1 )
         {
           // It is not clear whether the 0 at offset 3 is high byte of 2-byte little-endian
           // length value or is a set of flags that have not yet been seen.  The fact that
