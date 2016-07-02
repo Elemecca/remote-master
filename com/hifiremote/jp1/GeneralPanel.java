@@ -173,6 +173,7 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
         notesScrollPane.getBorder() ) );
     
     remoteNotes = new JTextArea( 6, 20 );
+    remoteNotes.setEditable( false );
     remoteNotesScrollPane = new JScrollPane( remoteNotes );
     remoteNotesScrollPane.setVisible( false );
     remoteNotesScrollPane.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createTitledBorder( "Notes" ),
@@ -293,7 +294,8 @@ public class GeneralPanel extends RMPanel implements ListSelectionListener, Acti
     createUpgradesButton.setEnabled( remoteConfig.getCreatableMissingCodes() != null );
     remoteNotesScrollPane.setVisible( remote.getNotes() != null );
     remoteNotes.setText( remote.getNotes() );
-
+    remoteNotes.setCaretPosition( 0 );
+    
     text = remoteConfig.getNotes();
     if ( text == null )
     {

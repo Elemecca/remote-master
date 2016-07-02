@@ -14,6 +14,12 @@ Changes for v2.04
 -- Private build 5
 - Added support for a multi-line Notes field in the [General] section of the RDF (Graham)
 - Added support for [Settings] entries for segmented remotes for bits from any segment type (Graham)
+-- Private build 6
+- Fix bug causing error when two device upgrades are present with same PID, different protocols, and no code for relevant processor in protocols.ini (Graham)
+- Add support for new [General+] section in RDF which can supplement [General] section; new Notes field should be put in this section (Graham)
+- Allow second parameter, modulus (default 2), in ForceEvenStarts entry of RDF [General] section; this is a digit and segment lengths must be 0 modulus this value (Graham)
+- Add new processor, TI2541, with interface type JP3.1, ForceEvenStarts modulus defaulting to 4 and learned signal format = 1 (Graham)
+- Update digitmaps.bin to 659 (Dave Reed, Graham)
 
 Changes for v2.03
 -- Alpha 8 --

@@ -735,7 +735,8 @@ public class DeviceButtonTableModel extends JP1TableModel< DeviceButton >
           texts[ i ] = i == col - 9 ? text : s == null ? "" : s;
           hexLen += texts[ i ].length();
         }
-        hexLen += remote.doForceEvenStarts() && ( hexLen & 1 ) == 1 ? 1 : 0;
+        int lenMod = hexLen & ( remote.getForceModulus() - 1 );
+        hexLen += remote.doForceEvenStarts() && lenMod != 0 ? remote.getForceModulus() - lenMod : 0;
         hex = new Hex( db.getSegment().getHex().subHex( 0, 12 ), 0, hexLen );
         data = hex.getData();
         data[ hexLen - 1 ] = ( short )0;

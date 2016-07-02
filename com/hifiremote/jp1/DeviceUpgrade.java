@@ -795,8 +795,18 @@ public class DeviceUpgrade extends Highlight
         }
         else if ( !du.getProtocol().getID( remote ).equals( protocol.getID( remote, false ) ) )
         {
+          // Protocol of device upgrade has different PID from selected protocol, so no conflict
           continue;
         }
+        else if ( getCode() == null || du.getCode() == null )
+        {
+          // If both are null then the two protocols are using the same built-in code and there is no conflict.
+          // If only one is null then we cannot test if both use the same code.  Even if one has custom code, it
+          // may still be the official executor.  To avoid forcing an unnecessary alternate PID, treat as
+          // no (known) conflict.
+          continue;
+        }
+        
         if ( du.getCode().equals( getCode() ) )
         {
           // A different protocol with same PID and same code is already used by a device upgrade.
@@ -1455,12 +1465,13 @@ public class DeviceUpgrade extends Highlight
       
       if ( pCode != null && remote.doForceEvenStarts() )
       {
-        // check for possibility that last byte of pCode is spurious
+        // check for possibility that last byte(s) of pCode is/are spurious
         int pLen = pCode.length();
-        if ( pLen == getCode( p ).length() + 1 
-            && pCode.subHex( 0, pLen - 1 ).equals( getCode( p ) ) )
+        int excess = pLen - getCode( p ).length();
+        if ( excess > 0 && excess < remote.getForceModulus() 
+            && pCode.subHex( 0, pLen - excess ).equals( getCode( p ) ) )
         {
-          pCode = pCode.subHex( 0, pLen - 1 );
+          pCode = pCode.subHex( 0, pLen - excess );
         }
       }
       

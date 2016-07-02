@@ -153,6 +153,8 @@ public class ProcessorManager
     p.setAddressLength( 4 );
     add( p );
     
+    p = new LittleEndianProcessor( "TI2541" );
+    add( p );
   }
 
 

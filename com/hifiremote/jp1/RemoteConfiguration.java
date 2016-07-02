@@ -2032,7 +2032,7 @@ public class RemoteConfiguration
       for ( Segment segment : keyMoveKeyList )
       {
         Hex hex = segment.getHex();
-        int deviceButtonIndex = remote.hasDeviceSelection() ? hex.getData()[ 0 ] : 0;
+        int deviceButtonIndex = hex.getData()[ 0 ];
         KeyMove keyMove = new KeyMoveKey( hex.getData()[ 1 ], deviceButtonIndex, hex.getData()[ 2 ], hex.get( 3 ), hex.getData()[ 5 ], null );
         keyMove.setSegmentFlags( segment.getFlags() );
         segment.setObject( keyMove );
@@ -2127,7 +2127,8 @@ public class RemoteConfiguration
         Hex hex = segment.getHex();
         LearnedSignal ls = null;
         int deviceButtonIndex = remote.hasDeviceSelection() ? hex.getData()[ 0 ] : 0;
-        if ( remote.getProcessor().getEquivalentName().equals( "MAXQ610" ) )
+        String procName = remote.getProcessor().getEquivalentName();
+        if ( procName.equals( "MAXQ610" ) || procName.equals( "TI2541" ) )
         {
           // hex.getData[ 3 ] seems always to be 0 and is not stored in the learned signal
           ls = new LearnedSignal( hex.getData()[ 1 ], deviceButtonIndex, 1, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
@@ -5649,7 +5650,8 @@ public class RemoteConfiguration
       k += count;
       dataLen += count;
     }
-    dataLen += remote.doForceEvenStarts() && ( dataLen & 1 ) == 1 ? 1 : 0;
+    int lenMod = dataLen & ( remote.getForceModulus() - 1 );
+    dataLen += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;
     Hex segData = new Hex( dataLen );
     segData.set( ( short )0xFF, dataLen - 1 );
 
@@ -5719,9 +5721,10 @@ public class RemoteConfiguration
         Button btn = activity.getButton();
         ActivityGroup[] groups = activity.getActivityGroups();
         int dataLen = remote.hasActivityControl() ? 4 : groups.length + 2;
-        if ( remote.doForceEvenStarts() && ( dataLen & 1 ) == 1 )
+        int lenMod = dataLen & ( remote.getForceModulus() - 1 );
+        if ( remote.doForceEvenStarts() && lenMod > 0 )
         {
-          dataLen++;
+          dataLen += remote.getForceModulus() - lenMod;
         }
         Hex segData = new Hex( dataLen );
         segData.set( ( short )0, 0 );
@@ -5827,7 +5830,8 @@ public class RemoteConfiguration
         flags = activity.getSegmentFlags();
         updateActivityData( activity, false );
       }
-      dataLen += remote.doForceEvenStarts() && ( dataLen & 1 ) == 1 ? 1 : 0;
+      int lenMod = dataLen & ( remote.getForceModulus() - 1 );
+      dataLen += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;
       Hex segData = new Hex( dataLen );
 
       if ( segments.get( 0x1E ) == null )
@@ -5999,7 +6003,8 @@ public class RemoteConfiguration
       }
       dataLen += sizes[ i ] > 0 ? 1 : 0;
     }
-    dataLen += remote.doForceEvenStarts() && ( dataLen & 1 ) == 1 ? 1 : 0;
+    int lenMod = dataLen & ( remote.getForceModulus() - 1 );
+    dataLen += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;
     segData = new Hex( dataLen );
     segData.set( ( short )0xFF, dataLen - 1 );
 
@@ -6362,7 +6367,10 @@ public class RemoteConfiguration
           size += macro.dataLength() + macro.getName().length() + 1;
         }
       }
-      Hex segData = new Hex( size + ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ? 4 : 3 ) );
+      int segSize = size + ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ? 4 : 3 );
+      int lenMod = segSize & ( remote.getForceModulus() - 1 );
+      segSize += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;  
+      Hex segData = new Hex( segSize );
       segData.set( ( short )0xFF, segData.length() - 1 );
       int flags = ( subset >> 8 ) & 0xFF;
       segData.set( ( short )( subset & 0xFF ), 0 );
@@ -7208,7 +7216,9 @@ public class RemoteConfiguration
             }
           }
           int size = hex.length() + ( ( code != null ) ? code.length() : 0 );
-          size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;
+          size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 10 : 9;          
+          int lenMod = size & ( remote.getForceModulus() - 1 );
+          size += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;           
           Hex segData = new Hex( size );
           int flags = dev.getSegmentFlags();
           Arrays.fill( segData.getData(), 0, 4, ( short )0 );
@@ -7251,8 +7261,9 @@ public class RemoteConfiguration
           pu.clearMemoryUsage();
           Hex code = pu.getCode();
           int pid = pu.getPid();
-          int size = code.length();
-          size += ( remote.doForceEvenStarts() && ( size & 1 ) == 0 ) ? 4 : 5;
+          int size = code.length() + 4;
+          int lenMod = size & ( remote.getForceModulus() - 1 );
+          size += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;           
           Hex segData = new Hex( size );
           segData.put(  0, 0 );
           segData.put( pid, 2 );
@@ -7590,8 +7601,9 @@ public class RemoteConfiguration
         ls.clearMemoryUsage();
         Hex hex = ls.getData();
         int size = hex.length();
-        int segSize = size + ( ( remote.doForceEvenStarts() && ( size & 1 ) == 1 ) ? 3 : 2 )
-          + ( isMAXQ ? 2 : 0 );   
+        int segSize = size + 2 + ( isMAXQ ? 2 : 0 );
+        int lenMod = segSize & ( remote.getForceModulus() - 1 );
+        segSize += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;
         Hex segData = new Hex( segSize );
         int flags = ls.getSegmentFlags();
         segData.set( ( short )ls.getDeviceButtonIndex(), 0 );
@@ -8327,15 +8339,19 @@ public class RemoteConfiguration
     {
       data[ remote.getSoftDevices().getCountAddress() ] = 0;
     }
-
-    // Zero the settings bytes for non-inverted settings
-    for ( Setting setting : remote.getSettings() )
+    
+    if ( !hasSegments() )
     {
-      if ( !setting.isInverted() && ( setting.getByteAddress() >= startAddr ) )
+      // We do not have enough info to initialize settings for segmented remotes.
+      // For non-segmented remotes, zero the settings bytes for non-inverted settings
+      for ( Setting setting : remote.getSettings() )
       {
-        data[ setting.getByteAddress() ] = 0;
+        if ( !setting.isInverted() && ( setting.getByteAddress() >= startAddr ) )
+        {
+          data[ setting.getByteAddress() ] = 0;
+        }
       }
-    }    
+    }
     
     // Set the fixed data without asking for permission
     updateFixedData( true );

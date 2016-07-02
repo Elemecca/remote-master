@@ -172,7 +172,7 @@ public class Remote implements Comparable< Remote >
           StringTokenizer st = new StringTokenizer( line, "[]" );
           line = st.nextToken();
 
-          if ( line.equals( "General" ) )
+          if ( line.equals( "General" ) || line.equals( "General+" ) )
           {
             line = parseGeneralSection( rdr );
           }
@@ -1312,8 +1312,13 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equalsIgnoreCase( "ForceEvenStarts" ) )
       {
-        forceEvenStarts = RDFReader.parseFlag( value );
+        forceEvenStarts = RDFReader.parseFlag( value.substring( 0, 1 ) );
+        forceModulus = 2;
         hasForceEvenStartsEntry = true;
+        if ( value.length() > 1 )
+        {
+          forceModulus = RDFReader.parseNumber( value.substring( value.length() - 1 ) );
+        }
       }
       else if ( parm.equalsIgnoreCase( "MasterPowerSupport" ) )
       {
@@ -1670,6 +1675,12 @@ public class Remote implements Comparable< Remote >
     if ( processor.getEquivalentName().equals( "MAXQ610" ) && !hasForceEvenStartsEntry )
     {
       forceEvenStarts = true;
+      forceModulus = 2;
+    }
+    else if ( processor.getEquivalentName().equals( "TI2541" ) && !hasForceEvenStartsEntry )
+    {
+      forceEvenStarts = true;
+      forceModulus = 4;
     }
     
     if ( imageMaps.length == 0 )
@@ -3330,6 +3341,10 @@ public class Remote implements Comparable< Remote >
     {
       return usesSimpleset() ? "JPS" : "JPUSB";
     }
+    else if ( name.equals( "TI2541" ) )
+    {
+      return "JP3.1";
+    }
     else
     {
       return "JP1";
@@ -3388,6 +3403,10 @@ public class Remote implements Comparable< Remote >
     else if ( name.equals( "MAXQ622" ) )
     {
       return "Maxim MAXQ622";
+    }
+    else if ( name.equals( "TI2541" ) )
+    {
+      return "Texas Instruments CC2541F256";
     }
     else
     {
@@ -4166,12 +4185,18 @@ public class Remote implements Comparable< Remote >
   }
   
   private boolean forceEvenStarts = false;
+  private int forceModulus = 1;
 
   public boolean doForceEvenStarts()
   {
     return forceEvenStarts;
   }
   
+  public int getForceModulus()
+  {
+    return forceModulus;
+  }
+
   public boolean isSoftButton( Button btn )
   {
     return buttonGroups.get( "Soft" ) != null && buttonGroups.get( "Soft" ).contains( btn )
