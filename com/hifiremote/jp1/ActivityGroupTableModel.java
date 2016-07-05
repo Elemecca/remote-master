@@ -134,7 +134,7 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
       Remote remote = remoteConfig.getRemote();
       if ( remote.getActivityControl() != null && remote.getActivityControl().length > 0 )
       {
-        cb.setModel( new DefaultComboBoxModel( remote.getActivityControl()[ tabIndex ][ row ] ) );
+        cb.setModel( new DefaultComboBoxModel( remote.getActivityControl()[ tabIndex ].devices[ row ] ) );
       }
       else
       {
@@ -194,7 +194,10 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
   @Override
   public Object getValueAt( int row, int column )
   {
+    Remote remote = remoteConfig.getRemote();
     ActivityGroup group = getRow( row );
+    Activity.Control ac = remote.getActivityControl()[ tabIndex ];
+    DeviceButton override = ac.overrides[ row ];
     switch ( column )
     {
       case 0:
@@ -202,7 +205,22 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
       case 1:
         return group.getButtons();
       case 2:
-        return group.getTarget() != null ? group.getTarget() : group.getDevice();
+        if ( group.getTarget() != null )
+        {
+          return group.getTarget();
+        }
+        else
+        {
+          DeviceButton dev = group.getDevice();
+          if ( dev != DeviceButton.noButton && override != null && override != dev )
+          {
+            return dev.toString() + "/" + override.toString();
+          }
+          else
+          {
+            return dev;
+          }
+        }
       case 3:
         return group.getNotes();
       case 4:

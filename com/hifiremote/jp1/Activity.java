@@ -15,6 +15,13 @@ public class Activity extends Highlight
 {
   public static final String[] assistType = { "Picture", "Sound", "Power" };
   
+  public static class Control
+  {
+    DeviceButton[][] devices = null;
+    DeviceButton[] overrides = null;
+    Integer[] maps = null;
+  }
+  
   public static class Assister
   {
     KeySpec ks = null;

@@ -576,7 +576,15 @@ public class Remote implements Comparable< Remote >
         {
           if ( activityControl == null || activityControl.length == 0 )
           {
-            activityControl = new DeviceButton[ activityBtns.size() ][ activityButtonGroups.length][] ;
+//            activityControl = new DeviceButton[ activityBtns.size() ][ activityButtonGroups.length][] ;
+            activityControl = new Activity.Control[ activityBtns.size() ];
+            for ( int i = 0; i < activityControl.length; i++ )
+            {
+              Activity.Control ac = new Activity.Control();
+              ac.devices = new DeviceButton[ activityButtonGroups.length][];
+              ac.overrides = new DeviceButton[ activityButtonGroups.length ];
+              activityControl[ i ] = ac;
+            }
           }
           control = token.substring( pos + 1 );
           token = token.substring( 0, pos ).trim();          
@@ -587,39 +595,78 @@ public class Remote implements Comparable< Remote >
           control = token;
         }
         
+        String override = null;
+        pos = control.indexOf( "::" );
+        if ( pos != -1 )
+        {
+          override = control.substring( pos + 2 ).trim();
+          control = control.substring( 0, pos );
+        }
+
         pos = control.indexOf( ":" );
         if ( pos != -1 )
         {
           String group = control.substring( 0, pos ).trim();
           control = control.substring( pos + 1 );
-          
-          if ( ! group.toLowerCase().startsWith( "group" ) )
+
+          if ( group.toLowerCase().startsWith( "group" ) )
           {
-            activityControl = new DeviceButton[ 0 ][ 0 ][ 0 ];
-            return line;
-          }
-          groupIndex = Integer.parseInt( group.substring( 5 ) );
-          StringTokenizer st2 = new StringTokenizer( control, "+" );
-          while ( st2.hasMoreTokens() )
-          {
-            token = st2.nextToken().trim();
-            Button btn = getButton( token );
-            if ( btn != null )
+            groupIndex = Integer.parseInt( group.substring( 5 ) );
+            StringTokenizer st2 = new StringTokenizer( control, "+" );
+            while ( st2.hasMoreTokens() )
             {
-              DeviceButton dev = getDeviceButton( btn.getKeyCode() );
-              ctrlBtns.add( dev );
+              token = st2.nextToken().trim();
+              Button btn = getButton( token );
+              if ( btn != null )
+              {
+                DeviceButton dev = getDeviceButton( btn.getKeyCode() );
+                ctrlBtns.add( dev );
+              }
+            }
+            activityControl[ activityIndex ].devices[ groupIndex ] = new DeviceButton[ ctrlBtns.size() ];
+            for ( int i = 0; i < ctrlBtns.size(); i++ )
+            {
+              activityControl[ activityIndex ].devices[ groupIndex ][ i ] = ctrlBtns.get( i ); 
+            }
+            if ( override != null )
+            {
+              Button btn = getButton( override );
+              if ( btn != null )
+              {
+                DeviceButton dev = getDeviceButton( btn.getKeyCode() );
+                activityControl[ activityIndex ].overrides[ groupIndex ] = dev;
+              }
             }
           }
-          activityControl[ activityIndex ][ groupIndex ] = new DeviceButton[ ctrlBtns.size() ];
-          for ( int i = 0; i < ctrlBtns.size(); i++ )
+          else if ( group.equalsIgnoreCase( "maps" ) )
           {
-            activityControl[ activityIndex ][ groupIndex ][ i ] = ctrlBtns.get( i ); 
+            StringTokenizer st2 = new StringTokenizer( control, "+" );
+            List< Integer > mapList = new ArrayList< Integer >();
+            while ( st2.hasMoreTokens() )
+            {
+              try
+              {
+                token = st2.nextToken().trim();
+                int map = RDFReader.parseNumber( token );
+                mapList.add( map );
+              }
+              catch ( Exception ex )
+              {
+                mapList.add( 0 );
+                System.err.println( "RDF error in [ActivityControl]: " + token + " is not an integer" );
+              }
+            }
+            activityControl[ activityIndex ].maps = mapList.toArray( new Integer[ 0 ] );
           }
-          
+          else
+          {
+            activityControl = new Activity.Control[ 0 ];
+            return line;
+          }
         }
         else
         {
-          activityControl = new DeviceButton[ 0 ][ 0 ][ 0 ];
+          activityControl = new Activity.Control[ 0 ];
           return line;
         }
       }
@@ -1062,7 +1109,7 @@ public class Remote implements Comparable< Remote >
     return segmentTypes;
   }
 
-  public DeviceButton[][][] getActivityControl()
+  public Activity.Control[] getActivityControl()
   {
     return activityControl;
   }
@@ -3656,7 +3703,7 @@ public class Remote implements Comparable< Remote >
   
   public boolean hasActivitySupport()
   {
-    return segmentTypes != null && ( segmentTypes.contains( 0xDB ) 
+    return segmentTypes != null && ( segmentTypes.contains( 0xDB ) || segmentTypes.contains( 0xE9 )
         || segmentTypes.contains( 0x1E ) || usesSimpleset() || isSSD() );
   }
   
@@ -3975,8 +4022,9 @@ public class Remote implements Comparable< Remote >
   
   private Button[][] activityButtonGroups = null;
   
-  private DeviceButton[][][] activityControl = new DeviceButton[ 0 ][ 0 ][ 0 ];
-
+//  private DeviceButton[][][] activityControl = new DeviceButton[ 0 ][ 0 ][ 0 ];
+  private Activity.Control[] activityControl = new Activity.Control[ 0 ];
+  
   /** The omit digit map byte. */
   private boolean omitDigitMapByte = false;
   

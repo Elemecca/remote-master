@@ -3,6 +3,7 @@ package com.hifiremote.jp1;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.DefaultCellEditor;
@@ -32,7 +33,17 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
       macroEditor.setTitle( remote.hasActivityInitialMacro() ? "Activity Macro Editor" : "Power Macro Editor" );
       macroEditor.setButtonEnabler( this );
       macroEditor.setRemoteConfiguration( remoteConfig );
-      setData( new Activity[] { remoteConfig.getActivities().get( btn ) } );
+      Activity activity = remoteConfig.getActivities().get( btn );
+      setData( new Activity[] { activity } );
+      
+      if ( remote.hasActivityControl() && remote.getActivityControl()[ 0 ].maps != null )
+      {
+        List< Button > activityBtns = remote.getButtonGroups().get( "Activity" );
+        int index = activityBtns.indexOf( btn );
+        int limit = remote.getActivityControl()[ index ].maps.length;
+        keyEditor.setType( - limit );
+      }
+      
       setHelpSetting( "AudioHelp" );
       audioHelpSettingBox.setModel( new DefaultComboBoxModel( helpSetting ) );
       setHelpSetting( "VideoHelp" );
@@ -270,10 +281,12 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
   public boolean isCellEditable( int row, int col )
   {
     Remote remote = remoteConfig.getRemote();
-    if ( remote.hasActivityControl() && getEffectiveColumn( col ) == 2 )
+    if ( remote.hasActivityControl() && getEffectiveColumn( col ) == 2
+        && remote.getActivityControl()[ 0 ].maps == null )
     {
-      // The only remote with activity control is the URC-7962 in which the activity setup
-      // data in the OxDB segment is ignored by the remote, so make activities non-editable
+      // The only remote with activity control that does not use the maps field is the URC-7962 
+      // in which the activity setup data in the OxDB segment is ignored by the remote, so make 
+      // activities non-editable
       return false;
     }
     return col > 0;
@@ -456,6 +469,15 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
         keyCode = ( Integer )value;
         btn = remote.getButton( keyCode );
       }
+      if ( remote.hasActivityControl() && btn.getName().equals( "0" ) )
+      {
+        btn = null;
+        for ( ActivityGroup group : activity.getActivityGroups() )
+        {
+          group.setDevice( DeviceButton.noButton );
+        }
+        activityGroupModel.fireTableDataChanged();
+      }
       activity.setSelector( btn );
       if ( remote.hasMasterPowerSupport() )
       {
@@ -471,16 +493,34 @@ public class ActivityFunctionTableModel extends JP1TableModel< Activity > implem
           macro.setKeyCode( keyCode );
         }
       }
-      if ( remote.hasActivityControl() )
+      if ( remote.hasActivityControl() && btn != null )
       {
         int tabIndex = remote.getButtonGroups().get( "Activity" ).indexOf( activity.getButton() );
-        for ( ActivityGroup group : activity.getActivityGroups() )
+        Activity.Control control = remote.getActivityControl()[ tabIndex ];
+        int index = Integer.valueOf( btn.getName() ) - 1;
+        ActivityGroup[] groups = activity.getActivityGroups();      
+        int val = control.maps[ index ];       
+        DeviceButton[] devBtns = remote.getDeviceButtons();
+        for ( ActivityGroup group : groups )
         {
-          if ( group.getDevice() == null || group.getDevice() == DeviceButton.noButton )
-          {
-            group.setDevice( remote.getActivityControl()[ tabIndex ][ group.getIndex()][ 0 ] );
-          }
+          group.setDevice( DeviceButton.noButton );
         }
+        for ( int k = 0; k < devBtns.length; k++ )
+        {
+          if ( ( ( val >> k ) & 1 ) == 1 )
+          {
+            DeviceButton devBtn = devBtns[ k ];                
+            for ( int j = 0; j < groups.length; j++ )
+            {
+              List< DeviceButton > list = Arrays.asList( control.devices[ j ] );
+              if ( list.contains( devBtn ) && ( groups[ j ].getDevice() == null
+                  || list.indexOf( devBtn ) > list.indexOf( groups[ j ].getDevice() ) ) )
+              {
+                groups[ j ].setDevice( devBtn );
+              }
+            }
+          }
+        }   
         activityGroupModel.fireTableDataChanged();
       }
     }

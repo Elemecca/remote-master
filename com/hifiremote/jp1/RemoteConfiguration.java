@@ -2458,7 +2458,7 @@ public class RemoteConfiguration
                 DeviceButton devBtn = devBtns[ i ];                
                 for ( int j = 0; j < groups.length; j++ )
                 {
-                  List< DeviceButton > list = Arrays.asList( remote.getActivityControl()[ tabIndex ][ j ] );
+                  List< DeviceButton > list = Arrays.asList( remote.getActivityControl()[ tabIndex ].devices[ j ] );
                   if ( list.contains( devBtn ) && ( groups[ j ].getDevice() == null
                         || list.indexOf( devBtn ) > list.indexOf( groups[ j ].getDevice() ) ) )
                   {
@@ -2478,6 +2478,55 @@ public class RemoteConfiguration
           }
         }
         segment.setObject( activity );
+      }
+    }
+    
+    activityAssignments = segments.get( 0xE9 );
+    if ( activityAssignments != null && activityAssignments.size() > 0 && remote.hasActivityControl() )
+    {
+      Segment segment = activityAssignments.get( 0 );
+      Hex hex = segment.getHex();
+      List< Button > activityBtns = remote.getButtonGroups().get( "Activity" );
+
+      for ( int i = 0; i < activityBtns.size(); i++ )
+      {
+        Activity activity = activities.get( activityBtns.get( i ) );
+        activity.setActive( true );
+        activity.setSegmentFlags( segment.getFlags() );
+        Activity.Control control = remote.getActivityControl()[ i ];
+        ActivityGroup[] groups = activity.getActivityGroups();
+        for ( ActivityGroup group : groups )
+        {
+          group.setDevice( DeviceButton.noButton );
+        }
+        int index = hex.getData()[ i + 4 ];
+        if ( index >= control.maps.length )
+        {
+          activity.setSelector( null );
+        }
+        else
+        {
+          String selectorName = "" + ( index + 1 );
+          activity.setSelector( remote.getButton( selectorName ) );      
+          int val = control.maps[ index ];       
+          DeviceButton[] devBtns = remote.getDeviceButtons();
+          for ( int k = 0; k < devBtns.length; k++ )
+          {
+            if ( ( ( val >> k ) & 1 ) == 1 )
+            {
+              DeviceButton devBtn = devBtns[ k ];                
+              for ( int j = 0; j < groups.length; j++ )
+              {
+                List< DeviceButton > list = Arrays.asList( control.devices[ j ] );
+                if ( list.contains( devBtn ) && ( groups[ j ].getDevice() == null
+                    || list.indexOf( devBtn ) > list.indexOf( groups[ j ].getDevice() ) ) )
+                {
+                  groups[ j ].setDevice( devBtn );
+                }
+              }
+            }
+          }   
+        }
       }
     }
     
@@ -5329,9 +5378,20 @@ public class RemoteConfiguration
     }
     for ( Activity activity : activities.values() )
     {
-      ActivityGroup[] groups = activity.getActivityGroups();
+      if ( activity.getSegment() == null )
+      {
+        continue;
+      }
       Segment segment = activity.getSegment();
       int address = segment.getAddress();
+      if ( segment.get_Type() == 0xE9 )
+      {
+        activity.clearMemoryUsage();
+        int tabIndex = remote.getButtonGroups().get( "Activity" ).indexOf( activity.getButton() );
+        updateHighlight( activity, address + 8 + tabIndex, 1 );
+        continue;
+      }
+      ActivityGroup[] groups = activity.getActivityGroups();      
       int incr = ( remote.hasActivityControl() ) ? 0 : 1;
       int pos = 1 - incr;
       for ( ActivityGroup group : groups )
@@ -5792,6 +5852,36 @@ public class RemoteConfiguration
           segments.get( 0xDC ).add( segment );
         }
       }
+    }
+    else if ( types.contains( 0xE9 ) )
+    {
+      segments.remove( 0xE9 );
+      List< Button > activityBtns = remote.getButtonGroups().get( "Activity" );
+      int dataLen = 4 + activityBtns.size();
+      int lenMod = dataLen & ( remote.getForceModulus() - 1 );
+      dataLen += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;
+      Hex segData = new Hex( dataLen );
+      if ( segments.get( 0xE9 ) == null )
+      {
+        segments.put(  0xE9, new ArrayList< Segment >() );
+      }
+      segData.set( ( short )0, 0 );
+      segData.set( ( short )0, 1 );
+      segData.set( ( short )0, 2 );
+      segData.set( ( short )( ( 1 << activityBtns.size() ) - 1 ), 3 );
+      
+      Segment segment = new Segment( 0xE9, 0, segData );
+      for ( int i = 0; i < activityBtns.size(); i++ )
+      {
+        Activity activity = activities.get( activityBtns.get( i ) );
+        activity.setSegment( segment );
+        // all activities should have same flags as there is only one segment
+        segment.setFlags( activity.getSegmentFlags() );
+        Button selector = activity.getSelector();
+        int val = selector == null ? 0x0F : Integer.valueOf( selector.getName() ) - 1;
+        segData.set( ( short )val, 4 + i );
+      }
+      segments.get( 0xE9 ).add( segment );
     }
     else if ( types.contains( 0x1E ) )
     {

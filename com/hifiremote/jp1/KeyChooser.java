@@ -140,15 +140,25 @@ public class KeyChooser
     {
       availableButtons = remote.getLearnButtons();
     }
-    else
+    else if ( type >= 0 )
     {
       availableButtons = remote.getBaseUpgradeButtons();
     }
+    else
+    {
+      // Negative value indicates use of digit buttons only, from 0 to (-type)
+      availableButtons = new Button[ 1 - type ];
+      for ( int i = 0; i <= -type; i++ )
+      {
+        availableButtons[ i ] = remote.getButton( "" + i );
+      }
+    }
+    
     buttonBox.setModel( new DefaultComboBoxModel( availableButtons ) );
     shiftBox.setText( remote.getShiftLabel());
-    shiftBox.setVisible( remote.getShiftEnabled() );
+    shiftBox.setVisible( type >= 0 && remote.getShiftEnabled() );
     xShiftBox.setText( remote.getXShiftLabel());
-    xShiftBox.setVisible( remote.getXShiftEnabled() );
+    xShiftBox.setVisible( type >= 0 && remote.getXShiftEnabled() );
     pack();
   }
 
@@ -233,7 +243,10 @@ public class KeyChooser
     if ( source == buttonBox )
     {
       Button b = ( Button )buttonBox.getSelectedItem();
-      b.setShiftBoxes( type, shiftBox, xShiftBox );
+      if ( type >= 0 )
+      {
+        b.setShiftBoxes( type, shiftBox, xShiftBox );
+      }
     }
     else if ( source == shiftBox )
     {

@@ -225,8 +225,18 @@ public class ActivityPanel extends RMPanel implements ChangeListener, ActionList
       }
       else if ( remote.hasActivityControl() )
       {
-        messageArea.setText( startMessage+ "For this remote the activity group settings are read-only." );
-//        messageArea.setText( startMessage + "Activity Group Assignments can be edited." );
+        if ( remote.getActivityControl()[ 0 ].maps == null )
+        { 
+          messageArea.setText( startMessage + "For this remote the activity group settings are read-only." );
+        }
+        else
+        {
+          messageArea.setText( "Note 1:  \"Key\" is the number key pressed to set the desired combination for the activity.  "
+          + "If \"Key\" is blank, the activity is not set.  "
+          + "Double-click to set or change the selection.  Selecting 0 unsets this activity.\n" 
+          + "Note 2:  In the group table below, an entry of the form XX/TV means that the device for that group is normally XX "
+          + "but this changes to TV for 10 seconds after the AV button is pressed." );
+        }
       }
       messageArea.setVisible( remote.hasMasterPowerSupport() || remote.hasActivityControl() );
       tabbedPane.removeAll();
