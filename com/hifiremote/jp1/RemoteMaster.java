@@ -116,7 +116,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
 
   /** Description of the Field. */
   public final static String version = "v2.04";
-  public final static int buildVer = 6;
+  public final static int buildVer = 7;
   
   public static int getBuild()
   {
@@ -3346,15 +3346,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
     if ( ioName.equals( "JPS" ) )
     {
       JPS jps = ( JPS )ioIn;
-      if ( use == Use.UPLOAD && osName.equals( "Linux" )
-          && ( portName == null || portName.contains( "REMOTE" ) ) )
-      {
-        String title = "Facility not supported";
-        String message = "RMIR does not yet support writing directly to a Simpleset remote in Linux";
-        JOptionPane.showMessageDialog( this, message, title, JOptionPane.INFORMATION_MESSAGE );
-        return null;
-      }
-      else if ( jps.isOpen() && ( use == Use.SAVING || use == Use.SAVEAS ) )
+      if ( jps.isOpen() && ( use == Use.SAVING || use == Use.SAVEAS ) )
       {
         portName = jps.getFilePath();
         System.err.println( "Already open on Port " + portName );

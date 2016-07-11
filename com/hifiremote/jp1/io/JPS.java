@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+//import java.nio.ByteBuffer;
+//import java.nio.channels.FileChannel;
+//import java.nio.file.Paths;
+//import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,6 +31,7 @@ import com.hifiremote.jp1.settings.Settings;
 public class JPS extends IO
 {
   private static final String lsblkCommand = "lsblk";
+  private static final String ddCommand = "dd";
 
   private String signature = null;
   private String filePath = null;
@@ -315,18 +320,59 @@ public class JPS extends IO
     }
     try
     {
-      ByteArrayOutputStream bao = new ByteArrayOutputStream(); 
-      s.save( bao ); 
-      OutputStream o = new FileOutputStream( filePath ); 
-      o.write( bao.toByteArray() );
+      ByteArrayOutputStream bao = new ByteArrayOutputStream();
+      s.save( bao );
+
+      String osName = System.getProperty( "os.name" );
+      if ( osName.equals( "Linux" ) )
+      {
+//        TODO: Code below is for Java 1.7.
+//        FileChannel o = FileChannel.open( Paths.get( filePath ), StandardOpenOption.WRITE, StandardOpenOption.SYNC );
+//        int dataWritten = 0, dataLeft = bao.size(), chunkSize;
+//        byte[] data = bao.toByteArray();
+//        while ( dataLeft > 0 )
+//        {
+//          chunkSize = Math.min(512, dataLeft);
+//          o.write( ByteBuffer.wrap( data, dataWritten, chunkSize ) );
+//          dataWritten += chunkSize;
+//          dataLeft -= chunkSize;
+//        }
+//        o.close();
+        String dd = getCommandPath( ddCommand );
+        if (dd == null) {
+          return -1;
+        }
+
+        File temp = File.createTempFile( "settings", ".bin" );
+        OutputStream o = new FileOutputStream( temp );
+        o.write( bao.toByteArray() );
+        o.close();
+
+        try
+        {
+          String[] cmd = { dd, "bs=512", "conv=notrunc,fsync", String.format("if=%s", temp.getAbsolutePath()), String.format("of=%s", filePath) };
+          Process p = Runtime.getRuntime().exec( cmd );
+          p.waitFor();
+          if (p.exitValue() != 0) {
+            return -1;
+          }
+        }
+        finally
+        {
+          temp.delete();
+        }
+      } else {
+        OutputStream o = new FileOutputStream( filePath );
+        o.write( bao.toByteArray() );
+        o.close();
+      }
       bao.close();
-      o.close();;
     }
     catch ( Exception e )
     {
       return -1;
     }
-    
+
     return buffer.length;
   }
 
