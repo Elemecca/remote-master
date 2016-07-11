@@ -50,7 +50,8 @@
 						<zipfileset src="${lib.dir}/hidapi-1.1.jar" includes="**/*.class"/>
                 		<zipfileset src="${lib.dir}/hidapi-1.1.jar">
                 			<include name="native/**/*.*"/>
-                		</zipfileset>		
+                		</zipfileset>
+                        <zipfileset src="${lib.dir}/commons-lang3-3.4.jar" includes="**/*.class"/>
                 </jar>
                 <java classpath="RemoteMaster.jar" classname="com.hifiremote.jp1.RemoteMaster" outputproperty="rmversion">
                         <arg value="-version" />

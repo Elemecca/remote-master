@@ -16,6 +16,8 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import com.hifiremote.jp1.Scanner;
 import com.hifiremote.jp1.RemoteMaster;
 import com.hifiremote.jp1.settings.SettingFactory;
@@ -24,8 +26,8 @@ import com.hifiremote.jp1.settings.Settings;
 
 public class JPS extends IO
 {
-  private static final String dosfslabelCommand = "dosfslabel";
-  
+  private static final String lsblkCommand = "lsblk";
+
   private String signature = null;
   private String filePath = null;
   private int eepromAddress = 0;
@@ -36,7 +38,7 @@ public class JPS extends IO
   private int irdbAddress = 0;
   private Settings s = null;
   private Scanner scanner = null;
-  
+
   public JPS() throws UnsatisfiedLinkError
   {
     super( null );
@@ -46,7 +48,7 @@ public class JPS extends IO
   {
     super( null );
   }
- 
+
   @Override
   public String getInterfaceName() {
     return "JPS";
@@ -56,7 +58,7 @@ public class JPS extends IO
   public String getInterfaceVersion() {
     return "0.1";
   }
-  
+
   @Override
   public int getInterfaceType() {
     return 0x301;
@@ -66,12 +68,12 @@ public class JPS extends IO
   public String[] getPortNames() {
     return new String[ 0 ];
   }
-  
+
   public boolean isOpen()
   {
     return s != null;
   }
-  
+
   @Override
   public void clear()
   {
@@ -95,7 +97,7 @@ public class JPS extends IO
     {
       String osName = System.getProperty( "os.name" );
       if ( osName.startsWith( "Windows" ) )
-      {   
+      {
         filePath = getSettingsWindows();
       }
       else if ( osName.equals( "Linux" ) )
@@ -123,13 +125,13 @@ public class JPS extends IO
         String title = "OS Error";
         JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.ERROR_MESSAGE );
       }
-      
+
       if ( filePath == null )
       {
         return null;
       }
     }
-    
+
     this.filePath = filePath;
     SettingFactory cf = new SettingFactory(SettingImpl.class);
     InputStream in = null;
@@ -159,7 +161,7 @@ public class JPS extends IO
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-   
+
     byte[] data = new byte[ 0x40 ];
     s.read( 0, data );
     int len = getInt32( data, 2 );
@@ -186,17 +188,17 @@ public class JPS extends IO
     }
     return filePath;
   }
-  
+
   private int getInt32( byte[] data, int offset )
   {
     int val = 0;
-    for ( int i = 0; i < 4; i++) 
+    for ( int i = 0; i < 4; i++)
     {
       val += (data[ offset + i ] & 0xFF) << 8 * (3 - i);
     }
     return val;
   }
-  
+
   @Override
   public boolean getJP2info( byte[] buffer, int length )
   {
@@ -253,17 +255,17 @@ public class JPS extends IO
   {
     return sigAddress;
   }
-  
+
   public int getSigSize()
   {
     return irdbAddress - sigAddress;
   }
-  
+
   public int getIRdbAddress()
   {
     return irdbAddress;
   }
-  
+
   public int getIRdbSize()
   {
     return eepromAddress - irdbAddress;
@@ -281,7 +283,7 @@ public class JPS extends IO
   }
 
   @Override
-  public int readRemote( int address, byte[] buffer, int length ) 
+  public int readRemote( int address, byte[] buffer, int length )
   {
     try
     {
@@ -376,141 +378,74 @@ public class JPS extends IO
     }
     return filePath;
   }
-  
-  public String getSettingsLinux() throws IOException, InterruptedException 
-  { 
-    String dosfslabel = null; 
-    File dosfslabelFile = null;
-    String filePath = null;
-    for ( String path : System.getenv("PATH").split(File.pathSeparator ) ) 
-    { 
-      dosfslabelFile = new File( path + File.separator + dosfslabelCommand ); 
-      if ( dosfslabelFile.exists() )
-      { 
-        dosfslabel = dosfslabelFile.getAbsolutePath(); 
-        break; 
-      } 
-    } 
 
-    if ( dosfslabel == null )
-    { 
-      String message = "Command dosfslabel is not found. Please use your system package\n"
-                     + "management to install package containing dosfslabel.";
+  public String getSettingsLinux() throws IOException, InterruptedException
+  {
+    String lsblk = getCommandPath( lsblkCommand );
+    String filePath = null;
+
+    if ( lsblk == null )
+    {
+      String message = "Command lsblk is not found. Please use your system package\n"
+                     + "management to install package containing lsblk.";
       String title = "OS Error";
       JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.ERROR_MESSAGE );
       return null;
-    } 
+    }
 
-    Runtime rt = Runtime.getRuntime(); 
-    BufferedReader mountsReader = new BufferedReader( new InputStreamReader( new FileInputStream( "/proc/mounts" ) ) ); 
-    String mountEntry; 
-    while ( ( mountEntry = mountsReader.readLine() ) != null )
-    { 
-      String[] values = mountEntry.split(" ", 4); 
-      if ( !"vfat".equals( values[2] ) )
-      {
+    Runtime rt = Runtime.getRuntime();
+    String[] cmd = { lsblk, "-npro", "label,fstype,mountpoint" };
+    Process p = rt.exec( cmd );
+    p.waitFor();
+    if ( p.exitValue() != 0 ) {
+      String message = "Command lsblk exited with an error code " + p.exitValue();
+      String title = "OS Error";
+      JOptionPane.showMessageDialog( RemoteMaster.getFrame(), message, title, JOptionPane.ERROR_MESSAGE );
+      return null;
+    }
+
+    BufferedReader br = new BufferedReader( new InputStreamReader( p.getInputStream() ) );
+    String line;
+    while ( ( line = br.readLine()) != null )
+    {
+      String[] values = line.split( " ", 3 );
+      if (!values[0].contains( "REMOTE" ) || !"vfat".equals( values[1] )) {
         continue;
       }
-
-      Process p = rt.exec( dosfslabel + " " + values[0] ); 
-      p.waitFor(); 
-      if ( p.exitValue() == 0 ) 
-      {
-        BufferedReader br = new BufferedReader( new InputStreamReader( p.getInputStream() ) ); 
-        String label = br.readLine(); 
-        if ( label.contains( "REMOTE" ) ) 
-        {
-          filePath = unescapeJavaString( values[1] ) + File.separator + "settings.bin";
-          System.err.println( "Loading from path: " + filePath );
-          if ( new File( filePath ).exists() ) 
-          {
-            break;
-          }
-          else
-          {
-            System.err.println( "File does not exist" );
-            filePath = null;
-          } 
-        } 
-        br.close(); 
+      if (values[2].isEmpty()) {
+        continue; // TODO: Maybe inform the used that the remote is not mounted?
       }
-      p.destroy();
+
+      String mountPoint = StringEscapeUtils.unescapeJava( values[2].replace( "\\x", "\\u00" ) );
+      filePath = mountPoint + File.separator + "settings.bin";
+      System.err.println( "Loading from path: " + filePath );
+
+      if ( new File( filePath ).exists() )
+      {
+        break;
+      }
+      else
+      {
+        System.err.println( "File does not exist" );
+        filePath = null;
+      }
     }
-    mountsReader.close();
+    br.close();
+    p.destroy();
     return filePath;
-  } 
+  }
 
-  public static String unescapeJavaString( String st ) 
-  { 
-    StringBuilder sb = new StringBuilder( st.length() ); 
-
-    for ( int i = 0; i < st.length(); i++ ) 
-    { 
-      char ch = st.charAt( i ); 
-      if ( ch == '\\' ) 
-      { 
-        char nextChar = ( i == st.length() - 1 ) ? '\\' : st.charAt(i + 1); 
-        // Octal escape? 
-        if ( nextChar >= '0' && nextChar <= '7' ) 
-        { 
-          String code = "" + nextChar; 
-          i++; 
-          if ( ( i < st.length() - 1 ) && st.charAt( i + 1 ) >= '0' && st.charAt( i + 1 ) <= '7') 
-          { 
-            code += st.charAt( i + 1 ); 
-            i++; 
-            if ( ( i < st.length() - 1 ) && st.charAt( i + 1 ) >= '0' && st.charAt( i + 1 ) <= '7') 
-            { 
-              code += st.charAt( i + 1 ); 
-              i++; 
-            } 
-          } 
-          sb.append( ( char ) Integer.parseInt( code, 8 ) ); 
-          continue; 
-        } 
-        switch ( nextChar ) 
-        { 
-          case '\\': 
-            ch = '\\'; 
-            break; 
-          case 'b': 
-            ch = '\b'; 
-            break; 
-          case 'f': 
-            ch = '\f'; 
-            break; 
-          case 'n': 
-            ch = '\n'; 
-            break; 
-          case 'r': 
-            ch = '\r'; 
-            break; 
-          case 't': 
-            ch = '\t'; 
-            break; 
-          case '\"': 
-            ch = '\"'; 
-            break; 
-          case '\'': 
-            ch = '\''; 
-            break; 
-            // Hex Unicode: u???? 
-          case 'u': 
-            if ( i >= st.length() - 5 )
-            { 
-              ch = 'u'; 
-              break; 
-            } 
-            int code = Integer.parseInt ( "" + st.charAt( i + 2 ) + st.charAt( i + 3 ) 
-                + st.charAt( i + 4 ) + st.charAt( i + 5 ), 16 ); 
-            sb.append( Character.toChars( code ) ); 
-            i += 5; 
-            continue; 
-        } 
-        i++; 
-      } 
-      sb.append(ch); 
-    } 
-    return sb.toString();
+  private String getCommandPath( String command )
+  {
+    File commandFile;
+    for ( String path : System.getenv( "PATH" ).split( File.pathSeparator ) )
+    {
+      commandFile = new File( path + File.separator + command );
+      if ( commandFile.exists() )
+      {
+        return commandFile.getAbsolutePath();
+      }
+    }
+    return null;
   }
 }

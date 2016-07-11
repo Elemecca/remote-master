@@ -21,6 +21,9 @@ Changes for v2.04
 - Add new processor, TI2541, with interface type JP3.1, ForceEvenStarts modulus defaulting to 4 and learned signal format = 1 (Graham)
 - Add support for activities stored as new segment type 0xE9 (Graham)
 - Update digitmaps.bin to 659 (Dave Reed, Graham)
+-- Private build 7
+- Add support for writting settings.bin file to SimpleSet remotes on Linux operating system (Marcin)
+- Rewrite detection of SimpleSet remote on Linux operating system (Marcin)
 
 Changes for v2.03
 -- Alpha 8 --
