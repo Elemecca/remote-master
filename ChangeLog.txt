@@ -22,7 +22,7 @@ Changes for v2.04
 - Add support for activities stored as new segment type 0xE9 (Graham)
 - Update digitmaps.bin to 659 (Dave Reed, Graham)
 -- Private build 7
-- Add support for writting settings.bin file to SimpleSet remotes on Linux operating system (Marcin)
+- Add support for writting settings.bin file to SimpleSet remotes on Linux operating system, thanks to findings and a patch provided by tidklaas (Marcin)
 - Rewrite detection of SimpleSet remote on Linux operating system (Marcin)
 
 Changes for v2.03
