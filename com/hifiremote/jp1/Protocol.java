@@ -170,7 +170,7 @@ public class Protocol
       {
         Hex hex = new Hex( temp );
         int value = hex.getData()[ 2 ];
-        if ( pName.equals( "HCS08" ) )
+        if ( pName.equals( "HCS08" ) || pName.equals( "TI2541" ))
         {
           value = hex.getData()[ 4 ];
         }
@@ -244,7 +244,7 @@ public class Protocol
       String key = it.next();
       Hex pCode = code.get( key );
       int value = pCode.getData()[ 2 ];
-      if ( key.equals( "HCS08" ) )
+      if ( key.equals( "HCS08" ) || key.equals( "TI2541" ))
       {
         value = pCode.getData()[ 4 ];
       }
@@ -380,7 +380,7 @@ public class Protocol
   public static int getCmdLengthFromCode( String proc, Hex pCode )
   {
     int value = pCode.getData()[ 2 ];
-    if ( proc.equals( "HCS08" ) )
+    if ( proc.equals( "HCS08" ) || proc.equals( "TI2541" ))
     {
       value = pCode.getData()[ 4 ];
     }
@@ -410,7 +410,7 @@ public class Protocol
   public static int getFixedDataLengthFromCode( String proc, Hex pCode )
   {
     int value = pCode.getData()[ 2 ];
-    if ( proc.equals( "HCS08" ) )
+    if ( proc.equals( "HCS08" ) || proc.equals( "TI2541" ))
     {
       value = pCode.getData()[ 4 ];
     }
