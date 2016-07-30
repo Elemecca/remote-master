@@ -46,7 +46,7 @@ public class UnpackLearned
    */
   public UnpackLearned( Hex hex, int format )
   {
-    if ( format > 1 )
+    if ( format > 2 )
     {
       ok = false;
       error = "Format=" + format + " not supported";
@@ -61,7 +61,22 @@ public class UnpackLearned
       return;
     }
     period = hex.get( 0 );
-    frequency = ( period == 0 ) ? 0 : ( format == 0 ) ? 8000000 / period : 12000000 / period;
+    if ( period == 0 )
+    {
+      frequency = 0;
+    }
+    else if ( format == 2 )
+    {
+      frequency = 4000000 / period;
+    }
+    else if ( format == 1 )
+    {
+      frequency = 12000000 / period;
+    }
+    else
+    {
+      frequency = 8000000 / period;
+    }
     if ( frequency > 400000 )
     {
       // Some remotes, eg JP2 & JP3, use a small but nonzero period for zero frequency
@@ -159,21 +174,31 @@ public class UnpackLearned
           bursts[ ndx ] = hex.get( ndx * 2 + 3 ) * 2;
         }
       }
-      else // format == 1
+      else // format == 1 or format == 2
       {
+        // period == 0 needs to be covered but has not actually been seen, as a small
+        // nonzero value seems to be used for unmodulated signals to make these timing
+        // calculations be correct.  2us is used here.
+        double multOn, multOff;
+        if ( format == 1 )
+        {
+          multOn = ( period == 0 ) ? 2.0 : period / 12.0;
+          multOff = 4.0 / 3.0;
+        }
+        else
+        {
+          multOn = ( period == 0 ) ? 2.0 : period / 4.0;
+          multOff = multOn;
+        }
         for ( int ndx = 0; ndx < burstNum * 2; ndx += 2 )
         {
-          // period == 0 needs to be covered but has not actually been seen, as a small
-          // nonzero value seems to be used for unmodulated signals to make these timing
-          // calculations be correct.  24 is used here as it corresponds to unit of 2us.
-          int mult = ( period == 0 ) ? 24 : period;
           int val = hex.get( ndx * 2 + 3 ) >> 4;
-          bursts[ ndx ] = ( val * mult + 6 ) / 12;
+          bursts[ ndx ] = (int)( (double)val * multOn + 0.5 );
         }
         for ( int ndx = 1; ndx < burstNum * 2; ndx += 2 )
         {
           int val = ( hex.getData()[ ndx * 2 + 2 ] & 0x0F ) * 0x10000 + hex.get( ndx * 2 + 3 );
-          bursts[ ndx ] = ( val * 8 + 3 ) / 6;
+          bursts[ ndx ] = (int)( (double)val * multOff + 0.5 );
         }
       }
     }

@@ -111,7 +111,7 @@ public class LearnedSignal extends Highlight
   
   public Hex getSignalHex( Remote remote )
   {
-    if ( format == 1 )
+    if ( format == 1 || format == 2 )
     {
       // Just get the data, without any header
       return new Hex( data );
@@ -218,7 +218,8 @@ public class LearnedSignal extends Highlight
 
   /**
    * Format is 0 for original learned signal format,
-   * 1 for the new format used by remotes with Maxim processors
+   * 1 for the format used by remotes with Maxim processors
+   * 2 for the format used in TI CC2541 processors
    */
   private int format = 0;
 

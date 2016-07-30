@@ -2128,10 +2128,14 @@ public class RemoteConfiguration
         LearnedSignal ls = null;
         int deviceButtonIndex = remote.hasDeviceSelection() ? hex.getData()[ 0 ] : 0;
         String procName = remote.getProcessor().getEquivalentName();
-        if ( procName.equals( "MAXQ610" ) || procName.equals( "TI2541" ) )
+        if ( procName.equals( "MAXQ610") )
         {
           // hex.getData[ 3 ] seems always to be 0 and is not stored in the learned signal
           ls = new LearnedSignal( hex.getData()[ 1 ], deviceButtonIndex, 1, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
+        }
+        else if ( procName.equals( "TI2541") )
+        {
+          ls = new LearnedSignal( hex.getData()[ 1 ], deviceButtonIndex, 2, hex.subHex( 4, hex.getData()[ 2 ] - 1 ), null );
         }
         else
         {
@@ -7688,18 +7692,18 @@ public class RemoteConfiguration
       for ( LearnedSignal ls : learned )
       {
         String procName = remote.getProcessor().getEquivalentName();
-        boolean usesFormat1 = procName.equals( "MAXQ610" ) || procName.equals( "TI2541" );
+        boolean usesFormat1or2 = procName.equals( "MAXQ610" ) || procName.equals( "TI2541" );
         ls.clearMemoryUsage();
         Hex hex = ls.getData();
         int size = hex.length();
-        int segSize = size + 2 + ( usesFormat1 ? 2 : 0 );
+        int segSize = size + 2 + ( usesFormat1or2 ? 2 : 0 );
         int lenMod = segSize & ( remote.getForceModulus() - 1 );
         segSize += remote.doForceEvenStarts() && lenMod > 0 ? remote.getForceModulus() - lenMod : 0;
         Hex segData = new Hex( segSize );
         int flags = ls.getSegmentFlags();
         segData.set( ( short )ls.getDeviceButtonIndex(), 0 );
         segData.set( ( short )ls.getKeyCode(), 1 );
-        if ( usesFormat1 )
+        if ( usesFormat1or2 )
         {
           // It is not clear whether the 0 at offset 3 is high byte of 2-byte little-endian
           // length value or is a set of flags that have not yet been seen.  The fact that
