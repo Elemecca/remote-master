@@ -36,6 +36,11 @@ public class Remote implements Comparable< Remote >
   {
     OFF, WARN, ENFORCE
   };
+  
+  public enum BlockFormat
+  {
+    NO, YES, DEFAULT
+  }
 
   /**
    * Instantiates a new remote.
@@ -1136,14 +1141,27 @@ public class Remote implements Comparable< Remote >
     return processor;
   }
   
+  /*
+   *  Some newer remotes have a block structure for the entire flash, with each
+   *  block starting with a two-byte checksum followed by a four-byte (32-bit) block
+   *  length.  This returns the length (6) of that block header, or -1 if the remote
+   *  does not have a block structure.  In general the presence or absence of
+   *  block structure correlates with other features and so does not need to be
+   *  set explicitly in the RDF, but there is a BlockFormat parameter that can be
+   *  set in the [General] structure of the RDF to override the default.
+   */
   public int getE2FormatOffset()
   {
-    if ( processor.getName().equals( "MAXQ622" ) 
-        || checkSums.length > 0 && checkSums[ 0 ] instanceof Xor16CheckSum )
+    if ( blockFormat == BlockFormat.DEFAULT )
     {
-      return 6;
+      if ( processor.getName().equals( "MAXQ622" ) 
+          || checkSums.length > 0 && checkSums[ 0 ] instanceof Xor16CheckSum )
+      {
+        return 6;
+      }
+      return -1;
     }
-    return -1;
+    else return blockFormat == BlockFormat.YES ? 6 : -1;
   }
 
   /**
@@ -1683,6 +1701,11 @@ public class Remote implements Comparable< Remote >
       else if ( parm.equalsIgnoreCase( "Notes" ) )
       {
         notes = parseNotes( rdr, rawValue );
+      }
+      else if ( parm.equalsIgnoreCase( "BlockFormat" ) )
+      {
+        boolean bf = RDFReader.parseFlag( value );
+        blockFormat = bf ? BlockFormat.YES : BlockFormat.NO;
       }
 
       // A SoftHT entry should be ignored unless SoftDevices is used.
@@ -3370,7 +3393,7 @@ public class Remote implements Comparable< Remote >
     else if ( name.equals( "S3F80" ) )
     {
       return  isSSD() ? "JPUSB" : segmentTypes == null ? "JP1.3" 
-          : checkSums.length > 0 && checkSums[ 0 ] instanceof Xor16CheckSum ? "JP1.4N" : "JP1.4";
+          : getE2FormatOffset() > 0 ? "JP1.4N" : "JP1.4";
     }
     else if ( name.equals( "SST" ) )
     {
@@ -4103,6 +4126,8 @@ public class Remote implements Comparable< Remote >
   private int activityMapIndex = 0;
 
   private int rdfVersionAddress = 0;
+  
+  private BlockFormat blockFormat = BlockFormat.DEFAULT;
 
   public int getRdfVersionAddress()
   {

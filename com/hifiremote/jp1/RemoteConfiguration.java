@@ -6550,11 +6550,14 @@ public class RemoteConfiguration
     {
       return;
     }
-    
-    segments.get( 0 ).clear();
-    for ( DeviceButton db : deviceButtons )
+
+    if ( segments.get( 0 ) != null )
     {
-      segments.get( 0 ).add(  db.getSegment() );
+      segments.get( 0 ).clear();
+      for ( DeviceButton db : deviceButtons )
+      {
+        segments.get( 0 ).add(  db.getSegment() );
+      }
     }
     if ( remote.getSegmentTypes().contains( 0x15 ) || remote.getSegmentTypes().contains( 0x11 ) )
     {
