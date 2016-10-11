@@ -196,8 +196,12 @@ public class ActivityGroupTableModel extends JP1TableModel< ActivityGroup > impl
   {
     Remote remote = remoteConfig.getRemote();
     ActivityGroup group = getRow( row );
-    Activity.Control ac = remote.getActivityControl()[ tabIndex ];
-    DeviceButton override = ac.overrides[ row ];
+    DeviceButton override = null;
+    if ( remote.hasActivityControl() && tabIndex >= 0 )
+    {
+      Activity.Control ac = remote.getActivityControl()[ tabIndex ];
+      override = ac.overrides[ row ];
+    }
     switch ( column )
     {
       case 0:

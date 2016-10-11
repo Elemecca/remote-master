@@ -1377,13 +1377,21 @@ public class Remote implements Comparable< Remote >
       }
       else if ( parm.equalsIgnoreCase( "ForceEvenStarts" ) )
       {
-        forceEvenStarts = RDFReader.parseFlag( value.substring( 0, 1 ) );
         forceModulus = 2;
         hasForceEvenStartsEntry = true;
-        if ( value.length() > 1 )
+        int valLen = value.length();
+        if ( valLen > 1 )
         {
-          forceModulus = RDFReader.parseNumber( value.substring( value.length() - 1 ) );
+          // Get final character and test if it is a digit.  
+          // If so, set forceModulus to this value and remove it from the value.
+          String modString = value.substring( valLen - 1 );
+          if ( modString.matches( "\\d" ) )
+          {
+            forceModulus = RDFReader.parseNumber( modString );
+            value = value.substring( 0, valLen - 1 ).trim();
+          }
         }
+        forceEvenStarts = RDFReader.parseFlag( value );
       }
       else if ( parm.equalsIgnoreCase( "MasterPowerSupport" ) )
       {
@@ -3401,7 +3409,7 @@ public class Remote implements Comparable< Remote >
     }
     else if ( name.equals( "MAXQ610" ) )
     {
-      return "JP2";
+      return getE2FormatOffset() > 0 ? "JP2N" : "JP2";
     }
     else if ( name.equals( "MAXQ612" ) )
     {
@@ -3476,7 +3484,7 @@ public class Remote implements Comparable< Remote >
     }
     else if ( name.equals( "TI2541" ) )
     {
-      return "Texas Instruments CC2541F256";
+      return "Texas Instruments CC2541 F256";
     }
     else
     {

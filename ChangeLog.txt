@@ -27,10 +27,12 @@ Changes for v2.04
 - Allow segmented remotes to have no type 00 segments (Graham)
 - Update digitmaps.bin to 660 (Dave Reed, Graham)
 - Private build 8
-- Add support for writing settings.bin file to SimpleSet remotes on Linux operating system, thanks to findings and a patch provided by tidklaas (Marcin)
+- Add support for writing settings.bin file to SimpleSet remotes on Linux operating system (tidklass, Marcin)
 - Rewrite detection of SimpleSet remote on Linux operating system (Marcin)
 - Correctly obtain the byte index for a TI2541 executor of the byte that contains the number of fixed and command bytes (Dave Reed)
 - Add learned format == 2 to handle learns from TI2541 (Dave Reed)
+- Distinguish between JP2 and JP2N formats, the latter having a block structure for its entire flash (Graham)
+- Fix bug introduced in build 6 preventing XSight remotes from displaying correctly (Graham)
 
 Changes for v2.03
 -- Alpha 8 --
