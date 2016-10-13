@@ -77,7 +77,7 @@
 			<zipfileset src="${src}/DecodeIR_245.zip" includes="**/libDecodeIR.so,**/libDecodeIR.jnilib" filemode="755"/>
 			<zipfileset src="${src}/DecodeIR_245.zip" includes="**/DecodeIR.dll,DecodeIR.html,Docs/*.txt" filemode="555"/>
           	<zipfileset src="${src}/RdfAndImages.zip" includes="**/*" defaultexcludes="no"/>
-            <zipfileset dir="${src}" includes="Setup.sh" filemode="755" />
+            <zipfileset dir="${src}" includes="Setup.sh,linux_xsight.rules" filemode="755" />
 			<!-- Tutorial is now on the wiki
           	<zipfileset dir="${src}" includes="tutorial.htm" />
             <zipfileset dir="tutorial_files" includes="**/*" prefix="tutorial_files" />

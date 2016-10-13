@@ -1,0 +1,31 @@
+# THIS FILE IS FOR USE ON LINUX SYSTEMS BY USERS WITH XSIGHT REMOTES.
+# It should be copied to the directory /etc/udev/rules.d/ and may be re-named if desired, provided the extension .rules is kept.
+# It provides a user-friendly name for the XSight as a USB device.  Some users have found that Linux systems cannot find the
+# XSight remote, even after running Setup.sh, unless this file is present. 
+
+# European One for all 8603 
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="8001", ATTRS{idVendor}=="06e7", SYMLINK+="xsight" GROUP="dialout", MODE="660" 
+
+# European One for all 8602 
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="8002", ATTRS{idVendor}=="06e7", SYMLINK+="xsight" GROUP="dialout", MODE="660" 
+
+# American Acoustic Research (Universal Electronics) ARRX15G 
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="8004", ATTRS{idVendor}=="06e7", SYMLINK+="xsight" GROUP="dialout", MODE="660" 
+
+# American Acoustic Research (Universal Electronics) ARRX18G 
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="8005", ATTRS{idVendor}=="06e7", SYMLINK+="xsight" GROUP="dialout", MODE="660" 
+
+# American Nevo (Universal Electronics) C2 
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="8006", ATTRS{idVendor}=="06e7", SYMLINK+="xsight" GROUP="dialout", MODE="660" 
+
+# American Nevo (Universal Electronics) C3 
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="8007", ATTRS{idVendor}=="06e7", SYMLINK+="xsight" GROUP="dialout", MODE="660" 
+
+# European One for all 8610 
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="8008", ATTRS{idVendor}=="06e7", SYMLINK+="xsight" GROUP="dialout", MODE="660" 
+
+# European One for all 8620 
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="8009", ATTRS{idVendor}=="06e7", SYMLINK+="xsight" GROUP="dialout", MODE="660" 
+
+# American Acoustic Research (Universal Electronics) ARRX12G 
+SUBSYSTEMS=="usb", ATTRS{idProduct}=="8011", ATTRS{idVendor}=="06e7", SYMLINK+="xsight" GROUP="dialout", MODE="660" 

@@ -800,7 +800,8 @@ public class SpecialFunctionDialog extends JDialog implements ActionListener, Fo
         secondKeyLabel.setText( "Double Key:" );
         enableMacros( false );
       }
-      else if ( typeStr.equals( "Multiplex" ) || typeStr.equals( "Pause" ))
+      else if ( typeStr.equals( "Multiplex" ) || typeStr.equals( "Pause" )
+          || typeStr.equals( "ModeName" ) )
       {
         enableMacros( false );
       }

@@ -33,6 +33,9 @@ Changes for v2.04
 - Add learned format == 2 to handle learns from TI2541 (Dave Reed)
 - Distinguish between JP2 and JP2N formats, the latter having a block structure for its entire flash (Graham)
 - Fix bug introduced in build 6 preventing XSight remotes from displaying correctly (Graham)
+- Include new file linux_xsight.rules in distribution for use in Linux systems (Graham, mdavej, Barf)
+- Fix bug causing the ModeName special function not to work correctly (Graham)
+- Update ReadMe to specify need for Java 7 rather than Java 6 and to explain the linux_xsight.rules file (Graham)
 
 Changes for v2.03
 -- Alpha 8 --
