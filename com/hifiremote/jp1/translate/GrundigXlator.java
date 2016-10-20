@@ -62,13 +62,19 @@ public class GrundigXlator extends Translate
   {
     // System.err.println( "GrundigXlator.in " + parmIndex +":" + bits + ":" + offset );
     int value = ( ( Number )parms[ parmIndex ].getValue() ).intValue();
-    int dev = ( ( Number )devParms[ 0 ].getValueOrDefault() ).intValue();
     int bitsOut = bits;
     if ( ( bits & 1 ) == 1 )
     {
-      value = value << 1 | dev >> 6;
+      // Command parameter.  If dev6 is bit 6 of 7-bit device code then DataToHex() maps 8
+      // bits of value ( OBC << 1 ) | dev6 to command hex, with dev6 preserved as bit 1 of 
+      // this hex.  Note that the value of dev6 affects the mapping between OBC and
+      // the other 7 bits of command hex.
       bitsOut += 1;
+      value = value << 1 | hexData.getData()[ 0 ] >> 1 & 1;
     }
+    // else: Device code.  DataToHex maps bits 0-5 of device code to bits 0-5 of device hex.
+    // Bit 7 of device hex is bit 7 of OBC, so a given fixed byte supports OBC values either
+    // < 128 or >= 128.
     int hex = DataToHex( value );
     insert( hexData, offset, bitsOut, hex );
   }
@@ -104,16 +110,19 @@ public class GrundigXlator extends Translate
    */
   public void out( Hex hexData, Value[] parms, DeviceParameter[] devParms )
   {
-    int bitsIn = bits;
-    int dev = ( ( Number )devParms[ 0 ].getValueOrDefault() ).intValue();
+    int bitsIn = bits + ( bits & 1 );
+    int hex = extract( hexData, offset, bitsIn );
+    int value = HexToData( hex );
     if ( ( bits & 1 ) == 1 )
     {
-      bitsIn += 1;
-      insert( hexData, bits - 1, 1, dev >> 6 );
+      // Command byte.  Remove bit 0, which is bit 6 of device code, to leave lowest 7 bits
+      // of OBC.
+      value >>= 1;
+      // Set top bit of 8-bit OBC from device parameter flag.
+      int obcTop = ( ( Number )devParms[ 1 ].getValueOrDefault() ).intValue();
+      value += obcTop << bits;
     }
-    int hex = extract( hexData, offset, bitsIn );
-    int data = HexToData( hex ) >> 1;
-    parms[ parmIndex ] = new Value( new Integer( data ) );
+    parms[ parmIndex ]= insert( parms[ parmIndex ], 0, bitsIn, value );
   }
 
   /** The parm index. */

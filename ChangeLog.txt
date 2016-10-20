@@ -26,16 +26,21 @@ Changes for v2.04
 - Update build process from using Java 6 to using Java 7 (Graham)
 - Allow segmented remotes to have no type 00 segments (Graham)
 - Update digitmaps.bin to 660 (Dave Reed, Graham)
-- Private build 8
+-- Private build 8
 - Add support for writing settings.bin file to SimpleSet remotes on Linux operating system (tidklass, Marcin)
 - Rewrite detection of SimpleSet remote on Linux operating system (Marcin)
 - Correctly obtain the byte index for a TI2541 executor of the byte that contains the number of fixed and command bytes (Dave Reed)
 - Add learned format == 2 to handle learns from TI2541 (Dave Reed)
 - Distinguish between JP2 and JP2N formats, the latter having a block structure for its entire flash (Graham)
 - Fix bug introduced in build 6 preventing XSight remotes from displaying correctly (Graham)
-- Include new file linux_xsight.rules in distribution for use in Linux systems (Graham, mdavej, Barf)
+-- Release build 9
+- Update build.xml to include new file linux_xsight.rules in distribution for use in Linux systems (Graham, mdavej, Barf)
+- Update jp12serial version in build.xml to v0.22 (Graham)
 - Fix bug causing the ModeName special function not to work correctly (Graham)
 - Update ReadMe to specify need for Java 7 rather than Java 6 and to explain the linux_xsight.rules file (Graham)
+- Fix bug in GrundigXlator (Graham)
+- Modify Grundig16 entry in protocols.ini to handle revised GrundigXlator (Graham)
+- Fix erroneous occurrence of message about error in RDF that can occur with segmented remotes (Graham)
 
 Changes for v2.03
 -- Alpha 8 --

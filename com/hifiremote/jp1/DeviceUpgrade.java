@@ -1321,6 +1321,7 @@ public class DeviceUpgrade extends Highlight
     Protocol tentative = null;
     Value[] tentativeVals = null;
     Protocol p = null;
+    int matchLenCount = -1;
     for ( Protocol tryit : protocols )
     {
       Protocol pOld = p;
@@ -1349,6 +1350,23 @@ public class DeviceUpgrade extends Highlight
         if ( isBuiltIn )
         {
           // Possible only for segmented and XSight remotes
+          // Before reporting error, check whether any other identified protocol matches these length values.
+          if ( matchLenCount < 0 )
+          {
+            // Check not yet performed
+            matchLenCount = 0;
+            for ( Protocol pTest : protocols )
+              if ( cmdLength == pTest.getDefaultCmd().length() && fixedDataLength == pTest.getFixedDataLength() )
+                matchLenCount++;
+          }
+          if ( matchLenCount > 0 )
+          {
+            // There are matching protocols, so skip this one
+            p = pOld;
+            continue;
+          }
+
+          // No protocols match length data so report error
           String title = "Protocol Variant Error";
           String message = "Error in RDF.  Wrong variant specified for PID = " + 
               pid + ".  Number of fixed/command bytes\n" +
