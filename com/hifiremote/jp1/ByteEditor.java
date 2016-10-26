@@ -1,6 +1,7 @@
 package com.hifiremote.jp1;
 
 import java.awt.Component;
+import java.awt.Toolkit;
 
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -97,25 +98,31 @@ public class ByteEditor extends SelectAllCellEditor
    * @see javax.swing.DefaultCellEditor#getCellEditorValue()
    */
   @Override
-  public Object getCellEditorValue() throws NumberFormatException
+  public Object getCellEditorValue()
   {
     Object rc = null;
     JTextField tf = ( JTextField )getComponent();
     String str = tf.getText().trim();
     if ( str != null && str.length() != 0 )
     {
-      int temp = Integer.parseInt( str, base );
-      if ( temp < min || temp > max )
+      try
       {
-        String msg = "Value entered must be between " + min + " and " + max + '.';
-        JP1Frame.showMessage( msg, tf );
-        throw new NumberFormatException( msg );
+        int temp = Integer.parseInt( str, base );
+        if ( temp < min || temp > max )
+        {
+          String msg = "Value entered must be between " + min + " and " + max + '.';
+          KeyMapMaster.showMessage( msg, tf );
+        }
+        else
+        {
+          KeyMapMaster.clearMessage( tf );
+          rc = new Integer( temp );
+        }
       }
-      else
+      catch ( NumberFormatException nfe )
       {
-        JP1Frame.clearMessage( tf );
-        rc = new Integer( temp );
-      }
+        Toolkit.getDefaultToolkit().beep();
+      };      
     }
 
     if ( parm != null )

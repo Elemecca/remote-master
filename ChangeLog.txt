@@ -41,6 +41,7 @@ Changes for v2.04
 - Fix bug in GrundigXlator (Graham)
 - Modify Grundig16 entry in protocols.ini to handle revised GrundigXlator (Graham)
 - Fix erroneous occurrence of message about error in RDF that can occur with segmented remotes (Graham)
+- Fix bug preventing message display in Function tab of Device Upgrade Editor when numeric values out of range are entered (Graham)
 
 Changes for v2.03
 -- Alpha 8 --
