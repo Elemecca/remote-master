@@ -109,8 +109,7 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   public static final Color AQUAMARINE = new Color( 127, 255, 212 );
 
   public static boolean admin = false;
-  public static boolean legacyMergeOK = false;
-  
+
   /** The frame. */
   private static JP1Frame frame = null;
 
@@ -1726,9 +1725,8 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
   public static ImageIcon createIcon( String imageName )
   {
     String imgLocation = "toolbarButtonGraphics/general/" + imageName + ".gif";
-    URLClassLoader sysloader = ( URLClassLoader )ClassLoader.getSystemClassLoader();
 
-    java.net.URL imageURL = sysloader.getResource( imgLocation );
+    java.net.URL imageURL = RemoteMaster.class.getResource( imgLocation );
 
     if ( imageURL == null )
     {
@@ -4451,7 +4449,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       }
 
       System.err.println( "RemoteMaster " + RemoteMaster.version + " build " + getBuild() );
-      System.err.println( "Legacy merge set = " + legacyMergeOK );
       String[] propertyNames =
       {
           "java.version", "java.vendor", "os.name", "os.arch", "java.home", "java.class.path"
@@ -4462,20 +4459,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
       {
         System.err.println( "   " + name + " = " + System.getProperty( name ) );
       }
-
-      ClassPathAdder.addFile( workDir );
-
-      FilenameFilter filter = new FilenameFilter()
-      {
-        public boolean accept( File dir, String name )
-        {
-          String temp = name.toLowerCase();
-          return temp.endsWith( ".jar" ) && !temp.endsWith( "remotemaster.jar" ) && !temp.endsWith( "setup.jar" );
-        }
-      };
-
-      File[] jarFiles = workDir.listFiles( filter );
-      ClassPathAdder.addFiles( jarFiles );
 
       if ( propertiesFile == null )
       {
@@ -4539,18 +4522,6 @@ public class RemoteMaster extends JP1Frame implements ActionListener, PropertyCh
    */
   public static void main( String[] args )
   {
-    java.lang.reflect.Method m;
-    try
-    {
-      m = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[] { String.class });
-      m.setAccessible(true);
-      ClassLoader cl = ClassLoader.getSystemClassLoader();
-      Object test1 = m.invoke(cl, "java.util.Arrays");
-      legacyMergeOK = test1 == null;
-      System.setProperty( "java.util.Arrays.useLegacyMergeSort", "true" );
-    }
-    catch ( Exception e ) {}
-   
     JDialog.setDefaultLookAndFeelDecorated( true );
     JFrame.setDefaultLookAndFeelDecorated( true );
     Toolkit.getDefaultToolkit().setDynamicLayout( true );
