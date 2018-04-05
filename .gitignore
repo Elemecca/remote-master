@@ -1,0 +1,11 @@
+# IDEA Project
+/.idea/
+/*.iml
+
+# Eclipse Project
+/.project
+/.classpath
+
+# Build output
+/.gradle/
+/build/

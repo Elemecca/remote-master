@@ -1,0 +1,41 @@
+group = 'com.hifiremote.jp1'
+// name = 'remote-master' (in settings.gradle)
+version = '3.0-SNAPSHOT'
+
+
+buildscript {
+  repositories {
+    jcenter()
+  }
+
+  dependencies {
+    classpath group: 'com.github.jengelman.gradle.plugins', name: 'shadow', version: '2.0.3'
+  }
+}
+
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+mainClassName = 'com.hifiremote.jp1.RemoteMaster'
+
+apply plugin: 'com.github.johnrengelman.shadow'
+
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile group: 'com.codeminders', name: 'hidapi', version:'1.1'
+  compile group: 'com.l2fprod.common', name: 'l2fprod-common-directorychooser', version:'6.9.1'
+  compile group: 'net.java.linoleum', name: 'jlfgr', version:'1_0'
+  compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.4'
+  compile group: 'tablelayout', name: 'TableLayout', version:'20050920'
+
+  // local JARs - use only for things not on Maven Central
+  compile fileTree('lib')
+}
